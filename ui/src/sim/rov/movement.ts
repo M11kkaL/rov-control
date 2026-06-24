@@ -1,86 +1,69 @@
 import * as THREE from 'three'
-import type { ControlCommand } from '../../types'
-import { SIM_RATES, type SimTelemetry } from '../types'
+import type { SimTelemetry } from '../types'
+import { MAX_PITCH, PITCH_RATE } from '../types'
+
+type State = {
+  depth: number
+  heading: number
+  pitch: number
+  x: number
+  z: number
+  velocity: number
+}
+
+const START: State = { depth: 2, heading: 0, pitch: 0, x: 0, z: 0, velocity: 0 }
 
 export class ROVMovement {
-  depth = 0.5
-  heading = 0
-  x = 0
-  z = 0
-  velocity = 0
+  private target: State = { ...START }
+  private display: State = { ...START }
+  private pitchInput = 0
 
-  private lastX = 0
-  private lastZ = 0
-  private lastDepth = 0.5
-  private lastCommand: ControlCommand = {
-    throttle: 0,
-    yaw: 0,
-    vertical: 0,
-    lateral: 0,
+  setPitchInput(input: number): void {
+    this.pitchInput = input
   }
 
-  applyCommand(command: ControlCommand): void {
-    this.lastCommand = command
-  }
-
-  syncFromBackend(depth: number, heading: number, x: number, z: number, velocity: number): void {
-    this.depth = depth
-    this.heading = heading
-    this.x = x
-    this.z = z
-    this.velocity = velocity
-    this.lastX = x
-    this.lastZ = z
-    this.lastDepth = depth
+  syncFromBackend(
+    depth: number,
+    heading: number,
+    pitch: number,
+    x: number,
+    z: number,
+    velocity: number,
+  ): void {
+    this.target = { depth, heading, pitch, x, z, velocity }
   }
 
   update(dt: number, rovGroup: THREE.Group): SimTelemetry {
-    const cmd = this.lastCommand
+    const t = 1 - Math.exp(-14 * dt)
 
-    if (cmd.emergencyStop) {
-      this.velocity = 0
-      this.applyTransform(rovGroup)
-      return this.getTelemetry()
-    }
+    this.display.depth += (this.target.depth - this.display.depth) * t
+    this.display.x += (this.target.x - this.display.x) * t
+    this.display.z += (this.target.z - this.display.z) * t
 
-    this.lastX = this.x
-    this.lastZ = this.z
-    this.lastDepth = this.depth
+    let deltaHeading = this.target.heading - this.display.heading
+    while (deltaHeading > 180) deltaHeading -= 360
+    while (deltaHeading < -180) deltaHeading += 360
+    this.display.heading += deltaHeading * t
 
-    this.depth += cmd.vertical * SIM_RATES.depth * dt
-    if (this.depth < 0) this.depth = 0
+    const pitchRad = (this.display.pitch * Math.PI) / 180
+    const targetPitchRad = (this.target.pitch * Math.PI) / 180
+    let pitchAngle = pitchRad + this.pitchInput * PITCH_RATE * dt
+    pitchAngle += (targetPitchRad - pitchAngle) * Math.min(1, 8 * dt)
+    pitchAngle = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, pitchAngle))
+    this.display.pitch = (pitchAngle * 180) / Math.PI
 
-    this.heading = ((this.heading + cmd.yaw * SIM_RATES.heading * dt) % 360 + 360) % 360
+    rovGroup.position.set(this.display.x, -this.display.depth, this.display.z)
+    rovGroup.rotation.order = 'YXZ'
+    rovGroup.rotation.y = (this.display.heading * Math.PI) / 180
+    rovGroup.rotation.x = pitchAngle
 
-    const rad = (this.heading * Math.PI) / 180
-    const forward = cmd.throttle * SIM_RATES.move * dt
-    const strafe = cmd.lateral * SIM_RATES.move * dt
-    this.x += forward * Math.cos(rad) - strafe * Math.sin(rad)
-    this.z += forward * Math.sin(rad) + strafe * Math.cos(rad)
-
-    const dx = this.x - this.lastX
-    const dz = this.z - this.lastZ
-    const dy = this.depth - this.lastDepth
-    if (dt > 0) {
-      this.velocity = Math.sqrt(dx * dx + dz * dz + dy * dy) / dt
-    }
-
-    this.applyTransform(rovGroup)
-    return this.getTelemetry()
-  }
-
-  getTelemetry(): SimTelemetry {
     return {
-      depth: this.depth,
-      heading: this.heading,
-      velocity: this.velocity,
-      x: this.x,
-      z: this.z,
+      depth: this.display.depth,
+      heading: this.display.heading,
+      pitch: this.display.pitch,
+      velocity: this.target.velocity,
+      x: this.display.x,
+      z: this.display.z,
     }
-  }
-
-  private applyTransform(rovGroup: THREE.Group): void {
-    rovGroup.position.set(this.x, -this.depth, this.z)
-    rovGroup.rotation.y = (this.heading * Math.PI) / 180
   }
 }

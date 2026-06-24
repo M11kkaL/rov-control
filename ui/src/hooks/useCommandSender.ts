@@ -20,6 +20,7 @@ export function useCommandSender(
         payload: {
           throttle: c.throttle,
           yaw: c.yaw,
+          pitch: c.pitch,
           vertical: c.vertical,
           lateral: c.lateral,
           emergencyStop: c.emergencyStop || undefined,

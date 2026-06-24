@@ -3,6 +3,7 @@ import type { ControlCommand } from './commands'
 export type Telemetry = {
   depth: number
   heading: number
+  pitch: number
   battery: number
   x: number
   z: number

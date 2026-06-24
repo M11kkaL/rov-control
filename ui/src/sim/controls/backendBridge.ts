@@ -20,6 +20,7 @@ export class BackendCommandBridge {
     const command: ControlCommand = payload.command ?? {
       throttle: payload.thrusters.front,
       yaw: payload.thrusters.left + payload.thrusters.right,
+      pitch: 0,
       vertical: payload.thrusters.vertical,
       lateral: (payload.thrusters.left - payload.thrusters.right) / 2,
     }
@@ -31,6 +32,7 @@ export class BackendCommandBridge {
     const simTelemetry = {
       depth: payload.depth,
       heading: payload.heading,
+      pitch: payload.pitch ?? 0,
       velocity: payload.velocity ?? 0,
       x: payload.x ?? 0,
       z: payload.z ?? 0,

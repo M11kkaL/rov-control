@@ -24,6 +24,7 @@ All commands are JSON objects sent over the WebSocket at `/ws`.
 {
   "throttle": 0.0,
   "yaw": 0.0,
+  "pitch": 0.0,
   "vertical": 0.0,
   "lateral": 0.0,
   "emergencyStop": false
@@ -34,6 +35,7 @@ All commands are JSON objects sent over the WebSocket at `/ws`.
 |-----------------|---------|---------|--------------------------------|
 | `throttle`      | number  | -1 … 1  | Forward / backward             |
 | `yaw`           | number  | -1 … 1  | Rotate left / right            |
+| `pitch`         | number  | -1 … 1  | Tilt nose up / down            |
 | `vertical`      | number  | -1 … 1  | Ascend / descend               |
 | `lateral`       | number  | -1 … 1  | Strafe left / right            |
 | `emergencyStop` | boolean |         | Optional. Stops all thrusters  |
@@ -44,6 +46,7 @@ All commands are JSON objects sent over the WebSocket at `/ws`.
 |-----------|---------------|-------------------|
 | Throttle  | W / S         | Left stick Y      |
 | Yaw       | A / D         | Left stick X      |
+| Pitch     | ↑ / ↓         | LB / RB (buttons 4/5) |
 | Vertical  | Q / E         | Right stick Y     |
 | Lateral   | R / F         | Right stick X     |
 | E-stop    | Space (hold)  | —                 |

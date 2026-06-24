@@ -1,6 +1,7 @@
 export type ControlCommand = {
   throttle: number
   yaw: number
+  pitch: number
   vertical: number
   lateral: number
   emergencyStop?: boolean

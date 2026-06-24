@@ -17,6 +17,7 @@ type Thrusters struct {
 type Snapshot struct {
 	Depth     float64          `json:"depth"`
 	Heading   float64          `json:"heading"`
+	Pitch     float64          `json:"pitch"`
 	Battery   float64          `json:"battery"`
 	X         float64          `json:"x"`
 	Z         float64          `json:"z"`

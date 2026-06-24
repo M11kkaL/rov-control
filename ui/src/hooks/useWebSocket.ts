@@ -4,13 +4,14 @@ import { WebSocketService } from '../services'
 import type { BackendCommandBridge } from '../sim'
 
 const DEFAULT_TELEMETRY: Telemetry = {
-  depth: 0,
+  depth: 2,
   heading: 0,
+  pitch: 0,
   battery: 100,
   x: 0,
   z: 0,
   velocity: 0,
-  command: { throttle: 0, yaw: 0, vertical: 0, lateral: 0 },
+  command: { throttle: 0, yaw: 0, pitch: 0, vertical: 0, lateral: 0 },
   thrusters: { front: 0, rear: 0, left: 0, right: 0, vertical: 0 },
   warnings: [],
   timestamp: 0,

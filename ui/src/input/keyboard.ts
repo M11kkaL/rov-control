@@ -10,6 +10,8 @@ const KEY_BINDINGS: Record<string, Partial<ControlState>> = {
   KeyE: { vertical: -1 },
   KeyR: { lateral: 1 },
   KeyF: { lateral: -1 },
+  ArrowUp: { pitch: -1 },
+  ArrowDown: { pitch: 1 },
 }
 
 export function createKeyboardInput(): {
@@ -51,6 +53,7 @@ export function createKeyboardInput(): {
       if (!binding) continue
       if (binding.throttle !== undefined) state.throttle = binding.throttle
       if (binding.yaw !== undefined) state.yaw = binding.yaw
+      if (binding.pitch !== undefined) state.pitch = binding.pitch
       if (binding.vertical !== undefined) state.vertical = binding.vertical
       if (binding.lateral !== undefined) state.lateral = binding.lateral
     }

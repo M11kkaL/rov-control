@@ -17,6 +17,7 @@ Telemetry is broadcast from the backend to all connected UI clients at 20 Hz.
 {
   "depth": 12.5,
   "heading": 180.0,
+  "pitch": 5.0,
   "battery": 87.0,
   "x": 1.2,
   "z": -0.5,
@@ -24,6 +25,7 @@ Telemetry is broadcast from the backend to all connected UI clients at 20 Hz.
   "command": {
     "throttle": 0.5,
     "yaw": 0.0,
+    "pitch": 0.0,
     "vertical": 0.0,
     "lateral": 0.0
   },
@@ -43,6 +45,7 @@ Telemetry is broadcast from the backend to all connected UI clients at 20 Hz.
 |----------------------|----------|--------------|--------------------------------|
 | `depth`              | number   | metres       | Current depth                  |
 | `heading`            | number   | degrees      | Compass heading 0–360          |
+| `pitch`              | number   | degrees      | Nose tilt -45 … 45 (neg = up)  |
 | `battery`            | number   | percent      | Remaining charge 0–100         |
 | `x`                  | number   | metres       | World X position               |
 | `z`                  | number   | metres       | World Z position               |
@@ -58,7 +61,7 @@ Telemetry is broadcast from the backend to all connected UI clients at 20 Hz.
 
 ## WebGL simulator usage
 
-The browser simulator reads `command` from each telemetry message and applies it in the Three.js update loop. It syncs `depth`, `heading`, `x`, `z`, and `velocity` from the backend to stay aligned with mock physics.
+The browser simulator reads `command` from each telemetry message and applies pitch locally (`rotation.x += pitchInput * dt`). It syncs `depth`, `heading`, `pitch`, `x`, `z`, and `velocity` from the backend to stay aligned with mock physics.
 
 ## Broadcast rate
 

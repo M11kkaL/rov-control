@@ -22,6 +22,7 @@ export class SimEngine {
   private lastTime = 0
   private onSimTelemetry: ((t: SimTelemetry) => void) | null = null
   private resizeObserver: ResizeObserver
+  private envUpdate: (dt: number) => void
 
   constructor(container: HTMLElement, bridge: BackendCommandBridge) {
     this.container = container
@@ -29,7 +30,8 @@ export class SimEngine {
     this.movement = new ROVMovement()
 
     this.scene = createScene()
-    buildUnderwaterEnvironment(this.scene)
+    const env = buildUnderwaterEnvironment(this.scene)
+    this.envUpdate = env.update
 
     const rov = createROV()
     this.rovGroup = rov.group
@@ -38,9 +40,9 @@ export class SimEngine {
 
     this.renderer = createRenderer(container)
 
-    this.bridge.onCommand((cmd) => this.movement.applyCommand(cmd))
+    this.bridge.onCommand((cmd) => this.movement.setPitchInput(cmd.pitch ?? 0))
     this.bridge.onTelemetry((t) =>
-      this.movement.syncFromBackend(t.depth, t.heading, t.x, t.z, t.velocity),
+      this.movement.syncFromBackend(t.depth, t.heading, t.pitch, t.x, t.z, t.velocity),
     )
 
     this.resizeObserver = new ResizeObserver(() => {
@@ -60,6 +62,7 @@ export class SimEngine {
       const dt = Math.min((time - this.lastTime) / 1000, 0.05)
       this.lastTime = time
 
+      this.envUpdate(dt)
       const telemetry = this.movement.update(dt, this.rovGroup)
       this.onSimTelemetry?.(telemetry)
 

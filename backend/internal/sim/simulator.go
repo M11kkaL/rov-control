@@ -12,6 +12,8 @@ import (
 const (
 	depthRate    = 2.0
 	headingRate  = 45.0
+	pitchRate    = 30.0
+	maxPitch     = 45.0
 	moveRate     = 1.5
 	batteryDrain = 0.01
 )
@@ -22,6 +24,7 @@ type Simulator struct {
 	battery   float64
 	x         float64
 	z         float64
+	pitch     float64
 	velocity  float64
 	lastX     float64
 	lastZ     float64
@@ -31,7 +34,13 @@ type Simulator struct {
 }
 
 func New(enabled bool) *Simulator {
-	s := &Simulator{battery: 100, enabled: enabled}
+	s := &Simulator{
+		battery: 100,
+		depth:   2.0,
+		x:       0,
+		z:       0,
+		enabled: enabled,
+	}
 	s.last = s.snapshot(control.Command{}, telemetry.Thrusters{}, nil)
 	return s
 }
@@ -54,18 +63,28 @@ func (s *Simulator) Tick(cmd control.Command, dt float64) telemetry.Snapshot {
 	s.lastZ = s.z
 	s.lastDepth = s.depth
 
-	s.depth += cmd.Vertical * depthRate * dt
+	s.depth -= cmd.Vertical * depthRate * dt
 	if s.depth < 0 {
 		s.depth = 0
 	}
 
-	s.heading = math.Mod(s.heading+cmd.Yaw*headingRate*dt+360, 360)
+	s.heading = math.Mod(s.heading-cmd.Yaw*headingRate*dt+360, 360)
+
+	s.pitch += cmd.Pitch * pitchRate * dt
+	if s.pitch > maxPitch {
+		s.pitch = maxPitch
+	} else if s.pitch < -maxPitch {
+		s.pitch = -maxPitch
+	}
 
 	rad := s.heading * math.Pi / 180
 	forward := cmd.Throttle * moveRate * dt
 	strafe := cmd.Lateral * moveRate * dt
-	s.x += forward*math.Cos(rad) - strafe*math.Sin(rad)
-	s.z += forward*math.Sin(rad) + strafe*math.Cos(rad)
+	// Three.js forward = -Z at heading 0
+	s.x += -forward*math.Sin(rad) + strafe*math.Cos(rad)
+	s.z += -forward*math.Cos(rad) + strafe*math.Sin(rad)
+
+	s.clampToPond()
 
 	dx := s.x - s.lastX
 	dz := s.z - s.lastZ
@@ -76,12 +95,7 @@ func (s *Simulator) Tick(cmd control.Command, dt float64) telemetry.Snapshot {
 
 	s.battery = math.Max(0, s.battery-batteryDrain)
 
-	warnings := []string{}
-	if s.battery < 20 {
-		warnings = append(warnings, "LOW BATTERY")
-	}
-
-	s.last = s.snapshot(cmd, thrusters, warnings)
+	s.last = s.snapshot(cmd, thrusters, s.pondWarnings())
 	return s.last
 }
 
@@ -111,6 +125,7 @@ func (s *Simulator) snapshot(cmd control.Command, thrusters telemetry.Thrusters,
 	return telemetry.Snapshot{
 		Depth:     s.depth,
 		Heading:   s.heading,
+		Pitch:     s.pitch,
 		Battery:   s.battery,
 		X:         s.x,
 		Z:         s.z,
