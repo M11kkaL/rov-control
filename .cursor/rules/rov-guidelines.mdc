@@ -1,0 +1,41 @@
+---
+alwaysApply: true
+---
+
+# ROV Project – Cursor Guidelines
+
+## General Rules
+- The project has two main modules: backend (Go) and UI (React/TypeScript + Three.js simulator).
+- Cursor must place generated code into the correct directory based on the project structure.
+- All physics, motor logic, telemetry, and protocol logic belong in Go.
+- All UI components, HUD, WebSocket client, and WebGL simulation belong in the React UI under `/ui/src/sim/`.
+- Do not use Unity or any external 3D engine outside the browser.
+
+## Backend (Go)
+- All backend code goes under `/backend`.
+- Executable entrypoints go under `/backend/cmd/<name>/main.go`.
+- Internal logic goes under `/backend/internal/...`.
+- Shared libraries go under `/backend/pkg/...`.
+- Mock mode: `MOCK_MODE=1` (default) enables internal physics; `MOCK_MODE=0` for real hardware.
+
+## UI (React/TypeScript + Three.js)
+- All UI code goes under `/ui`.
+- WebGL simulator lives under `/ui/src/sim/`.
+- Nose camera must be attached to the ROV front (first-person); no external follow camera.
+- When the user requests video feed, 3D environment, ROV movement, or camera logic → generate code under `/ui/src/sim/...`.
+
+## Protocol
+- All protocol documentation goes under `/protocol`.
+- WebSocket messages follow JSON structures in `/protocol/commands.md` and `/protocol/telemetry.md`.
+- UI → backend: control commands.
+- Backend → UI: telemetry updates (includes echoed command).
+
+## Modes: Simulation vs Real ROV
+- **simulation**: WebGL simulator in browser + backend mock physics (`MOCK_MODE=1`).
+- **real**: backend controls real motors (`MOCK_MODE=0`); UI protocol unchanged.
+
+## Architecture Principles
+- Backend is the “brain”.
+- WebGL simulator in the UI is the “eyes” in simulation mode.
+- React UI is the “control panel”.
+- Code must remain modular for real hardware integration.

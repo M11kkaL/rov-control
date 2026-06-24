@@ -1,0 +1,57 @@
+---
+alwaysApply: true
+---
+
+# ROV Project – Karpathy‑Style Engineering Guidelines
+
+## 1. Think Before Coding
+Before writing code:
+- Understand the module (backend or UI).
+- Understand the data flow.
+- Understand the protocol.
+- Understand how this affects simulation vs real ROV mode.
+
+## 2. Simplicity First
+- Prefer the simplest solution that works.
+- Avoid abstractions until they are needed.
+- Avoid premature optimization.
+- Avoid unnecessary patterns.
+
+## 3. No Giant Diffs
+- Keep changes small and focused.
+- One feature = one PR = one diff.
+- Cursor should generate code in small, understandable chunks.
+
+## 4. Clear Boundaries
+- Backend = physics, control, telemetry.
+- UI = visualization, input, HUD, WebGL simulator.
+- Never mix responsibilities.
+
+## 5. Explicit Protocols
+- All messages must be typed and documented.
+- No “magic strings”.
+- No hidden fields.
+- UI → backend = control commands.
+- Backend → UI = telemetry (includes echoed command).
+
+## 6. Deterministic Real‑Time Loops
+- Simulation ticks must be predictable.
+- Avoid blocking operations.
+- Use goroutines carefully.
+- Log failures clearly.
+
+## 7. Build for Replaceability
+- WebGL simulator must work without external dependencies.
+- UI must not depend on plugins outside the browser.
+- Backend must not depend on UI.
+
+## 8. Fail Loudly, Recover Gracefully
+- Log errors with context.
+- Never panic unless absolutely necessary.
+- Always validate input.
+
+## 9. Ask When Uncertain
+If requirements are unclear:
+- Ask the user.
+- Do not guess.
+- Do not invent features.
