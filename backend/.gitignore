@@ -1,0 +1,45 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/bin/
+/dist/
+/server
+/server.exe
+
+# Test & coverage
+*.test
+*.out
+coverage/
+coverage.out
+*.coverprofile
+
+# Go workspace
+/vendor/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Temp & cache
+/tmp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
