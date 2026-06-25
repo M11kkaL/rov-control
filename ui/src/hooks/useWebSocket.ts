@@ -11,6 +11,7 @@ const DEFAULT_TELEMETRY: Telemetry = {
   cameraTilt: 0,
   flightMode: 'manual',
   lights: false,
+  lightsLevel: 0,
   battery: 100,
   x: 0,
   z: 0,

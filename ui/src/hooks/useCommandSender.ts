@@ -22,6 +22,8 @@ export function useCommandSender(
       const c = controlRef.current
       const flags = uiFlagsRef.current
       const useCameraTilt = flags.cameraTilt
+      const cameraTiltValue = useCameraTilt ? flags.manualCameraTilt : 0
+      const lightsLevel = Math.max(0, Math.min(100, flags.lightsLevel))
 
       const message: CommandMessage = {
         type: 'command',
@@ -32,8 +34,9 @@ export function useCommandSender(
           vertical: c.vertical,
           lateral: c.lateral,
           flightMode: deriveFlightMode(flags),
-          lights: flags.lights,
-          cameraTilt: useCameraTilt ? c.pitch : 0,
+          lights: lightsLevel > 0,
+          lightsLevel,
+          cameraTilt: useCameraTilt ? cameraTiltValue : 0,
           emergencyStop: c.emergencyStop || undefined,
         },
         timestamp: Date.now(),

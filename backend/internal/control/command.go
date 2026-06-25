@@ -16,6 +16,7 @@ type Command struct {
 	Lateral       float64 `json:"lateral"`
 	FlightMode    string  `json:"flightMode,omitempty"`
 	Lights        bool    `json:"lights,omitempty"`
+	LightsLevel   float64 `json:"lightsLevel,omitempty"`
 	CameraTilt    float64 `json:"cameraTilt,omitempty"`
 	EmergencyStop bool    `json:"emergencyStop,omitempty"`
 }
@@ -24,15 +25,22 @@ func (c Command) Clamped() Command {
 	if c.EmergencyStop {
 		return Command{EmergencyStop: true, FlightMode: normalizeFlightMode(c.FlightMode)}
 	}
+	level := clampPercent(c.LightsLevel)
+	if c.Lights && level == 0 {
+		level = 100
+	}
+	lights := level > 0
+
 	return Command{
-		Throttle:   clamp(c.Throttle),
-		Yaw:        clamp(c.Yaw),
-		Pitch:      clamp(c.Pitch),
-		Vertical:   clamp(c.Vertical),
-		Lateral:    clamp(c.Lateral),
-		FlightMode: normalizeFlightMode(c.FlightMode),
-		Lights:     c.Lights,
-		CameraTilt: clamp(c.CameraTilt),
+		Throttle:    clamp(c.Throttle),
+		Yaw:         clamp(c.Yaw),
+		Pitch:       clamp(c.Pitch),
+		Vertical:    clamp(c.Vertical),
+		Lateral:     clamp(c.Lateral),
+		FlightMode:  normalizeFlightMode(c.FlightMode),
+		Lights:      lights,
+		LightsLevel: level,
+		CameraTilt:  clamp(c.CameraTilt),
 	}
 }
 
@@ -47,6 +55,10 @@ func normalizeFlightMode(mode string) string {
 
 func clamp(v float64) float64 {
 	return math.Max(-1, math.Min(1, v))
+}
+
+func clampPercent(v float64) float64 {
+	return math.Max(0, math.Min(100, v))
 }
 
 type State struct {

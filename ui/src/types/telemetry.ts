@@ -8,6 +8,7 @@ export type Telemetry = {
   cameraTilt: number
   flightMode: FlightMode
   lights: boolean
+  lightsLevel: number
   holdDepthTarget?: number
   battery: number
   x: number

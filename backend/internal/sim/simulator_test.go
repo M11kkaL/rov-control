@@ -143,4 +143,19 @@ func TestLightsEchoedInSnapshot(t *testing.T) {
 	if !snap.Lights {
 		t.Fatal("expected lights=true in telemetry")
 	}
+	if snap.LightsLevel != 100 {
+		t.Fatalf("lightsLevel=%.0f, want 100 when lights=true", snap.LightsLevel)
+	}
+}
+
+func TestLightsLevelDimsInSnapshot(t *testing.T) {
+	s := New(true)
+	snap := s.Tick(control.Command{LightsLevel: 40}, 0.05)
+
+	if !snap.Lights {
+		t.Fatal("expected lights on at level 40")
+	}
+	if snap.LightsLevel != 40 {
+		t.Fatalf("lightsLevel=%.0f, want 40", snap.LightsLevel)
+	}
 }

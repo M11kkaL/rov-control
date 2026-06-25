@@ -9,6 +9,7 @@ type State = {
   roll: number
   cameraTilt: number
   lights: boolean
+  lightsLevel: number
   flightMode: SimTelemetry['flightMode']
   x: number
   z: number
@@ -22,6 +23,7 @@ const START: State = {
   roll: 0,
   cameraTilt: 0,
   lights: false,
+  lightsLevel: 0,
   flightMode: 'manual',
   x: 0,
   z: 0,
@@ -29,7 +31,6 @@ const START: State = {
 }
 
 const HEADLIGHT_ON = 28
-const HEADLIGHT_OFF = 0
 
 export class ROVMovement {
   private target: State = { ...START }
@@ -52,12 +53,26 @@ export class ROVMovement {
     roll: number,
     cameraTilt: number,
     lights: boolean,
+    lightsLevel: number,
     flightMode: SimTelemetry['flightMode'],
     x: number,
     z: number,
     velocity: number,
   ): void {
-    this.target = { ...this.target, depth, heading, pitch, roll, cameraTilt, lights, flightMode, x, z, velocity }
+    this.target = {
+      ...this.target,
+      depth,
+      heading,
+      pitch,
+      roll,
+      cameraTilt,
+      lights,
+      lightsLevel,
+      flightMode,
+      x,
+      z,
+      velocity,
+    }
   }
 
   update(
@@ -72,7 +87,8 @@ export class ROVMovement {
     this.display.x += (this.target.x - this.display.x) * t
     this.display.z += (this.target.z - this.display.z) * t
     this.display.roll += (this.target.roll - this.display.roll) * t
-    this.display.lights = this.target.lights
+    this.display.lightsLevel += (this.target.lightsLevel - this.display.lightsLevel) * t
+    this.display.lights = this.display.lightsLevel > 0
 
     let deltaHeading = this.target.heading - this.display.heading
     while (deltaHeading > 180) deltaHeading -= 360
@@ -102,8 +118,9 @@ export class ROVMovement {
     camera.rotation.order = 'YXZ'
     camera.rotation.x = camTiltRad
 
-    headlight.intensity = this.display.lights ? HEADLIGHT_ON : HEADLIGHT_OFF
-    headlight.visible = this.display.lights
+    const level = this.display.lightsLevel / 100
+    headlight.intensity = HEADLIGHT_ON * level
+    headlight.visible = level > 0.01
 
     return {
       depth: this.display.depth,
@@ -112,6 +129,7 @@ export class ROVMovement {
       roll: this.display.roll,
       cameraTilt: this.display.cameraTilt,
       lights: this.display.lights,
+      lightsLevel: this.display.lightsLevel,
       flightMode: this.target.flightMode,
       velocity: this.target.velocity,
       x: this.display.x,

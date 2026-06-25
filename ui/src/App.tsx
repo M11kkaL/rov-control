@@ -1,104 +1,116 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { VideoFeed, useSimBridge } from './components'
-import { Header } from './components/layout/Header'
-import { Footer } from './components/layout/Footer'
-import { HudPanel } from './components/hud/HudPanel'
-import { HudFrame } from './components/layout/HudFrame'
-import { Sidebar } from './components/layout/Sidebar'
-import { MapIcon, InputIcon } from './components/layout/icons'
-import { MissionOverlay } from './components/hud/MissionOverlay'
-import { GamepadStatus } from './components/controls/GamepadStatus'
+import { StatusBar } from './components/hud/StatusBar'
+import { NavigationPanel } from './components/hud/NavigationPanel'
+import { TelemetryOverlay } from './components/hud/TelemetryOverlay'
+import { ThrusterPanel } from './components/hud/ThrusterPanel'
+import { TelemetryPanel } from './components/hud/TelemetryPanel'
+import { EventsLog } from './components/hud/EventsLog'
+import { BottomGauges } from './components/hud/BottomGauges'
 import type { UiControlFlags } from './components/controls/ActionButtons'
 import { getOperationMode } from './config/app'
-import { useCommandSender, useControlInput, useGamepadConnected, useWebSocket } from './hooks'
+import { useCommandSender, useControlInput, useWebSocket } from './hooks'
 import { useClock } from './hooks/useClock'
-import { useTelemetryRecorder } from './hooks/useTelemetryRecorder'
-
-const LEFT_TABS = [
-  { id: 'mission', label: 'Map', icon: <MapIcon /> },
-  { id: 'input', label: 'Input', icon: <InputIcon /> },
-]
+import styles from './App.module.scss'
 
 function App() {
   const bridge = useSimBridge()
-  const { connected, telemetry, ping, service } = useWebSocket(bridge)
+  const { connected, telemetry, service } = useWebSocket(bridge)
   const control = useControlInput()
-  const gamepadConnected = useGamepadConnected()
   const time = useClock()
   const mode = getOperationMode()
 
   const [uiFlags, setUiFlags] = useState<UiControlFlags>({
     lights: false,
+    lightsLevel: 0,
     holdDepth: false,
     stabilized: false,
     cameraTilt: false,
+    manualCameraTilt: 0,
   })
-  const [recording, setRecording] = useState(false)
-  const { frameCount, download } = useTelemetryRecorder(telemetry, recording)
 
-  const [leftTab, setLeftTab] = useState('mission')
-  const [leftExpanded, setLeftExpanded] = useState(true)
+  useEffect(() => {
+    setUiFlags((prev) => ({
+      ...prev,
+      manualCameraTilt: telemetry.cameraTilt,
+    }))
+  }, [telemetry.cameraTilt])
 
   useCommandSender(service, control, uiFlags)
 
-  const handleToggleRecording = () => {
-    if (recording) {
-      download('jsonl')
-      setRecording(false)
-      return
-    }
-    setRecording(true)
+  const handleLightsLevel = (level: number) => {
+    setUiFlags((prev) => ({
+      ...prev,
+      lightsLevel: level,
+      lights: level > 0,
+    }))
+  }
+
+  const handleLightsToggle = () => {
+    setUiFlags((prev) => {
+      const nextLevel = prev.lightsLevel > 0 ? 0 : 80
+      return { ...prev, lightsLevel: nextLevel, lights: nextLevel > 0 }
+    })
+  }
+
+  const handleCameraTilt = (tilt: number) => {
+    setUiFlags((prev) => ({
+      ...prev,
+      manualCameraTilt: tilt,
+      cameraTilt: true,
+    }))
   }
 
   return (
-    <div className="flex h-svh flex-col overflow-hidden bg-bg-dark">
-      <Header
-        mode={mode}
-        connected={connected}
-        ping={ping}
-        time={time}
-        recording={recording}
-        recordFrames={frameCount}
-        onToggleRecording={handleToggleRecording}
-      />
+    <div className={styles.shell}>
+      <StatusBar connected={connected} flightMode={telemetry.flightMode} time={time} mode={mode} />
 
-      <div className="flex min-h-0 flex-1">
-        <Sidebar
-          side="left"
-          expanded={leftExpanded}
-          onToggleExpanded={() => setLeftExpanded((v) => !v)}
-          tabs={LEFT_TABS}
-          activeTab={leftTab}
-          onTabChange={setLeftTab}
-        >
-          <div className="p-2">
-            {leftTab === 'mission' && (
-              <MissionOverlay x={telemetry.x} z={telemetry.z} velocity={telemetry.velocity} />
-            )}
-            {leftTab === 'input' && (
-              <GamepadStatus
-                control={control}
-                gamepadConnected={gamepadConnected}
-                cameraTiltMode={uiFlags.cameraTilt}
-              />
-            )}
-          </div>
-        </Sidebar>
+      <div className={styles.body}>
+        <div className={styles.leftColumn}>
+          <NavigationPanel x={telemetry.x} z={telemetry.z} depth={telemetry.depth} />
+          <ThrusterPanel
+            thrusters={telemetry.thrusters}
+            lightsLevel={uiFlags.lightsLevel}
+            cameraTilt={uiFlags.manualCameraTilt}
+            uiFlags={uiFlags}
+            onLightsLevel={handleLightsLevel}
+            onCameraTilt={handleCameraTilt}
+            onUiFlagsChange={setUiFlags}
+          />
+        </div>
 
-        <main className="relative min-h-0 min-w-0 flex-1">
+        <main className={styles.center}>
           <VideoFeed bridge={bridge} />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,8,16,0.55)_100%)]" />
-          <HudFrame />
-          <HudPanel telemetry={telemetry} connected={connected} />
+          <TelemetryOverlay
+            depth={telemetry.depth}
+            pitch={telemetry.pitch}
+            roll={telemetry.roll}
+            heading={telemetry.heading}
+            connected={connected}
+            lightsLevel={uiFlags.lightsLevel}
+            onLightsToggle={handleLightsToggle}
+          />
+          <BottomGauges
+            heading={telemetry.heading}
+            velocity={telemetry.velocity}
+            depth={telemetry.depth}
+            pitch={telemetry.pitch}
+            roll={telemetry.roll}
+          />
         </main>
-      </div>
 
-      <Footer
-        control={control}
-        telemetry={telemetry}
-        uiFlags={uiFlags}
-        onUiFlagsChange={setUiFlags}
-      />
+        <div className={styles.rightColumn}>
+          <TelemetryPanel
+            battery={telemetry.battery}
+            depth={telemetry.depth}
+            velocity={telemetry.velocity}
+            pitch={telemetry.pitch}
+            roll={telemetry.roll}
+            warnings={telemetry.warnings}
+          />
+          <EventsLog warnings={telemetry.warnings} connected={connected} depth={telemetry.depth} />
+        </div>
+      </div>
     </div>
   )
 }

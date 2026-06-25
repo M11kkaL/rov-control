@@ -3,9 +3,11 @@ import { PanelCard } from '../layout/PanelCard'
 
 export type UiControlFlags = {
   lights: boolean
+  lightsLevel: number
   holdDepth: boolean
   stabilized: boolean
   cameraTilt: boolean
+  manualCameraTilt: number
 }
 
 type ActionButtonsProps = {
@@ -15,7 +17,7 @@ type ActionButtonsProps = {
 }
 
 const ACTIONS: {
-  key: keyof UiControlFlags
+  key: 'lights' | 'stabilized' | 'holdDepth' | 'cameraTilt'
   label: string
   Icon: () => ReactNode
 }[] = [
@@ -59,10 +61,13 @@ const ACTIONS: {
 ]
 
 export function ActionButtons({ flags, onChange, emergencyStop }: ActionButtonsProps) {
-  const toggle = (key: keyof UiControlFlags) => {
+  const toggle = (key: 'lights' | 'stabilized' | 'holdDepth' | 'cameraTilt') => {
     const next = { ...flags, [key]: !flags[key] }
     if (key === 'holdDepth' && next.holdDepth) next.stabilized = false
     if (key === 'stabilized' && next.stabilized) next.holdDepth = false
+    if (key === 'lights') {
+      next.lightsLevel = next.lights ? 100 : 0
+    }
     onChange(next)
   }
 

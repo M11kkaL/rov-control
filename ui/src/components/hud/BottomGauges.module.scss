@@ -1,0 +1,142 @@
+@use '../../styles/hud-tokens' as *;
+
+.row {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  pointer-events: none;
+  z-index: 6;
+  font-family: $hud-font;
+}
+
+.gauge {
+  @include hud-panel;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem 0.55rem;
+  min-width: 118px;
+  background: linear-gradient(180deg, rgba(6, 14, 22, 0.88) 0%, rgba(4, 10, 16, 0.92) 100%);
+}
+
+.label {
+  @include hud-label;
+  font-size: 8px;
+}
+
+.svg {
+  display: block;
+}
+
+.value {
+  font-family: $hud-mono;
+  font-size: 13px;
+  font-weight: 600;
+  color: $hud-neon;
+  text-shadow: 0 0 10px $hud-neon-glow;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.sub {
+  font-size: 10px;
+  color: $hud-text-dim;
+  font-weight: 500;
+}
+
+.arcBg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 4;
+}
+
+.arcFg {
+  fill: none;
+  stroke: $hud-neon;
+  stroke-width: 4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px $hud-neon-glow);
+  transition: stroke-dashoffset 120ms linear;
+}
+
+.arcBgInner {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 3;
+}
+
+.arcDepth {
+  fill: none;
+  stroke: rgba(44, 232, 212, 0.4);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 120ms linear;
+}
+
+.dualValues {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+}
+
+.dualRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.dualLabel {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: $hud-text-dim;
+}
+
+.dualValue {
+  font-family: $hud-mono;
+  font-size: 11px;
+  font-weight: 600;
+  color: $hud-neon;
+}
+
+.tick {
+  stroke: rgba(44, 232, 212, 0.28);
+  stroke-width: 1;
+}
+
+.centerDot {
+  fill: $hud-neon;
+  filter: drop-shadow(0 0 4px $hud-neon-glow);
+}
+
+.needle {
+  stroke: $hud-neon;
+  stroke-width: 2;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px $hud-neon-glow);
+  transition: transform 120ms linear;
+  transform-origin: center;
+}
+
+.needleRed {
+  stroke: $hud-danger;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(255, 77, 109, 0.5));
+  transition: transform 120ms linear;
+  transform-origin: center;
+}
+
+.compassLabel {
+  fill: $hud-text-dim;
+  font-size: 6px;
+  font-weight: 700;
+  font-family: $hud-font;
+}

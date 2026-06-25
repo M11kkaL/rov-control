@@ -22,6 +22,7 @@ type Snapshot struct {
 	CameraTilt      float64         `json:"cameraTilt"`
 	FlightMode      string          `json:"flightMode"`
 	Lights          bool            `json:"lights"`
+	LightsLevel     float64         `json:"lightsLevel"`
 	HoldDepthTarget float64         `json:"holdDepthTarget,omitempty"`
 	Battery         float64         `json:"battery"`
 	X               float64         `json:"x"`

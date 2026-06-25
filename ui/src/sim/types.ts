@@ -7,6 +7,7 @@ export type SimTelemetry = {
   roll: number
   cameraTilt: number
   lights: boolean
+  lightsLevel: number
   flightMode: FlightMode
   velocity: number
   x: number

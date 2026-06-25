@@ -54,6 +54,7 @@ export class SimEngine {
         t.roll,
         t.cameraTilt,
         t.lights,
+        t.lightsLevel,
         t.flightMode,
         t.x,
         t.z,

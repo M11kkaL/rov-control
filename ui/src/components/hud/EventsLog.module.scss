@@ -1,0 +1,97 @@
+@use '../../styles/hud-tokens' as *;
+
+.panel {
+  @include hud-panel;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.85rem;
+  font-family: $hud-font;
+  flex: 1;
+  min-height: 0;
+}
+
+.title {
+  @include hud-label;
+  font-size: 9px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.5rem 0.55rem;
+  border-radius: $hud-radius-sm;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+
+.danger {
+  background: $hud-danger;
+  box-shadow: 0 0 8px rgba(255, 77, 109, 0.45);
+}
+
+.warning {
+  background: $hud-warning;
+  box-shadow: 0 0 8px rgba(245, 166, 35, 0.35);
+}
+
+.success {
+  background: $hud-success;
+  box-shadow: 0 0 8px rgba(61, 214, 140, 0.35);
+}
+
+.info {
+  background: $hud-info;
+  box-shadow: 0 0 8px rgba(77, 159, 255, 0.35);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.kind {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.kindDanger {
+  color: $hud-danger;
+}
+
+.kindWarning {
+  color: $hud-warning;
+}
+
+.kindSuccess {
+  color: $hud-success;
+}
+
+.kindInfo {
+  color: $hud-info;
+}
+
+.message {
+  font-size: 11px;
+  color: $hud-text;
+  line-height: 1.35;
+}

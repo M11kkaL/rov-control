@@ -8,6 +8,7 @@ export type ControlCommand = {
   lateral: number
   flightMode?: FlightMode
   lights?: boolean
+  lightsLevel?: number
   cameraTilt?: number
   emergencyStop?: boolean
 }

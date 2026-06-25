@@ -38,6 +38,7 @@ export class BackendCommandBridge {
       roll: payload.roll ?? 0,
       cameraTilt: payload.cameraTilt ?? 0,
       lights: payload.lights ?? false,
+      lightsLevel: payload.lightsLevel ?? (payload.lights ? 100 : 0),
       flightMode: payload.flightMode ?? 'manual',
       velocity: payload.velocity ?? 0,
       x: payload.x ?? 0,

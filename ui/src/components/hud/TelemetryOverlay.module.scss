@@ -1,0 +1,190 @@
+@use '../../styles/hud-tokens' as *;
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: $hud-font;
+  z-index: 5;
+}
+
+.tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 40, 48, 0.22) 0%,
+    rgba(6, 28, 36, 0.12) 45%,
+    rgba(4, 18, 24, 0.28) 100%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(5, 10, 18, 0.65) 100%);
+}
+
+.crosshairH,
+.crosshairV {
+  position: absolute;
+  background: rgba(44, 232, 212, 0.35);
+}
+
+.crosshairH {
+  left: 20%;
+  right: 20%;
+  top: 50%;
+  height: 1px;
+}
+
+.crosshairV {
+  top: 20%;
+  bottom: 20%;
+  left: 50%;
+  width: 1px;
+}
+
+.horizon {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  height: 1px;
+  background: rgba(44, 232, 212, 0.2);
+  top: calc(50% - 18px);
+  box-shadow: 0 28px 0 rgba(44, 232, 212, 0.15);
+}
+
+.topLeft,
+.topRight,
+.bottomLeft,
+.bottomRight {
+  position: absolute;
+  display: flex;
+  gap: 0.35rem;
+  pointer-events: auto;
+}
+
+.topLeft {
+  top: 14px;
+  left: 14px;
+}
+
+.topRight {
+  top: 14px;
+  right: 14px;
+}
+
+.bottomLeft {
+  bottom: 88px;
+  left: 14px;
+}
+
+.bottomRight {
+  bottom: 88px;
+  right: 14px;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chip {
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(14, 20, 30, 0.82);
+  color: $hud-text-muted;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 150ms;
+
+  &:hover {
+    color: $hud-neon;
+    border-color: $hud-border-strong;
+  }
+}
+
+.chipActive {
+  color: $hud-neon;
+  border-color: $hud-border-strong;
+  background: rgba(44, 232, 212, 0.08);
+}
+
+.rec {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  background: rgba(14, 20, 30, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: $hud-mono;
+  font-size: 10px;
+  color: $hud-text;
+}
+
+.recDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: $hud-danger;
+  box-shadow: 0 0 8px rgba(255, 77, 109, 0.6);
+}
+
+.readouts {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1.25rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(10, 16, 24, 0.55);
+  border: 1px solid rgba(44, 232, 212, 0.1);
+}
+
+.readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.readoutLabel {
+  @include hud-label;
+  font-size: 8px;
+}
+
+.readoutValue {
+  font-family: $hud-mono;
+  font-size: 12px;
+  color: $hud-text;
+}
+
+.headingChip {
+  font-family: $hud-mono;
+  font-size: 12px;
+  font-weight: 600;
+  color: $hud-neon;
+}
+
+.reconnect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(245, 166, 35, 0.35);
+  border-radius: 8px;
+  background: rgba(30, 22, 8, 0.85);
+  color: $hud-warning;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}

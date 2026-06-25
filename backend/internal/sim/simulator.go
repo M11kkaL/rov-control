@@ -38,6 +38,7 @@ type Simulator struct {
 	holdDepthTarget float64
 	prevFlightMode  string
 	lights          bool
+	lightsLevel     float64
 	lastX           float64
 	lastZ           float64
 	lastDepth       float64
@@ -73,7 +74,8 @@ func (s *Simulator) Tick(cmd control.Command, dt float64) telemetry.Snapshot {
 		return s.last
 	}
 
-	s.lights = applied.Lights
+	s.lightsLevel = applied.LightsLevel
+	s.lights = applied.LightsLevel > 0
 	s.lastX = s.x
 	s.lastZ = s.z
 	s.lastDepth = s.depth
@@ -222,6 +224,7 @@ func (s *Simulator) snapshot(cmd control.Command, thrusters telemetry.Thrusters,
 		CameraTilt:      s.cameraTilt,
 		FlightMode:      cmd.FlightMode,
 		Lights:          s.lights,
+		LightsLevel:     s.lightsLevel,
 		HoldDepthTarget: holdTarget,
 		Battery:         s.battery,
 		X:               s.x,

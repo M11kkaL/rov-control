@@ -1,0 +1,71 @@
+// ORION-inspired mission control palette
+$hud-bg: #0b0e14;
+$hud-bg-elevated: #111722;
+$hud-bg-panel: #141b26;
+$hud-bg-panel-gradient: linear-gradient(180deg, #161e2b 0%, #121820 100%);
+$hud-neon: #2ce8d4;
+$hud-neon-bright: #5efce8;
+$hud-neon-dim: rgba(44, 232, 212, 0.42);
+$hud-neon-glow: rgba(44, 232, 212, 0.28);
+$hud-text: #eef3f7;
+$hud-text-muted: #7d8b9a;
+$hud-text-dim: rgba(125, 139, 154, 0.85);
+$hud-success: #3dd68c;
+$hud-warning: #f5a623;
+$hud-danger: #ff4d6d;
+$hud-info: #4d9fff;
+$hud-border: rgba(44, 232, 212, 0.14);
+$hud-border-strong: rgba(44, 232, 212, 0.28);
+$hud-grid: rgba(44, 232, 212, 0.07);
+$hud-font: 'DM Sans', 'Barlow Semi Condensed', system-ui, sans-serif;
+$hud-mono: 'JetBrains Mono', ui-monospace, monospace;
+$hud-radius: 14px;
+$hud-radius-sm: 10px;
+
+@mixin hud-panel {
+  background: $hud-bg-panel-gradient;
+  border: 1px solid $hud-border;
+  border-radius: $hud-radius;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+@mixin hud-label {
+  font-family: $hud-font;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $hud-text-muted;
+}
+
+@mixin hud-glow-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, $hud-neon-dim, transparent);
+}
+
+@mixin hud-slider-track($pct: 50%) {
+  background: linear-gradient(
+    90deg,
+    $hud-neon 0%,
+    $hud-neon $pct,
+    rgba(255, 255, 255, 0.08) $pct,
+    rgba(255, 255, 255, 0.08) 100%
+  );
+}
+
+@mixin hud-health-bar {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+@mixin hud-health-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(44, 232, 212, 0.55), $hud-neon);
+  box-shadow: 0 0 8px $hud-neon-glow;
+  transition: width 280ms ease;
+}

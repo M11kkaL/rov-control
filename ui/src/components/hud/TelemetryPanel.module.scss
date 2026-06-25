@@ -1,0 +1,126 @@
+@use '../../styles/hud-tokens' as *;
+
+.panel {
+  @include hud-panel;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 220px;
+  padding: 0.9rem;
+  font-family: $hud-font;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vehicleIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: $hud-radius-sm;
+  background: rgba(44, 232, 212, 0.06);
+  border: 1px solid $hud-border;
+}
+
+.vehicleName {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: $hud-text;
+}
+
+.vehicleSub {
+  font-size: 10px;
+  color: $hud-text-muted;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.batteryRow {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.batteryPct {
+  display: block;
+  font-family: $hud-mono;
+  font-size: 22px;
+  font-weight: 600;
+  color: $hud-success;
+  line-height: 1.1;
+}
+
+.batteryEta {
+  display: block;
+  font-size: 10px;
+  color: $hud-text-muted;
+  margin-top: 0.15rem;
+}
+
+.healthRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.healthHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.healthLabel {
+  font-size: 11px;
+  color: $hud-text-muted;
+}
+
+.healthPct {
+  font-family: $hud-mono;
+  font-size: 10px;
+  color: $hud-neon;
+}
+
+.healthTrack {
+  @include hud-health-bar;
+}
+
+.healthFill {
+  @include hud-health-fill;
+}
+
+.envSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.envRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 10px;
+}
+
+.envLabel {
+  color: $hud-text-muted;
+}
+
+.envValue {
+  font-family: $hud-mono;
+  color: $hud-text;
+  font-weight: 500;
+}
