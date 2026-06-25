@@ -31,8 +31,8 @@ export type PondEnvironment = {
 }
 
 export function buildPondEnvironment(scene: THREE.Scene): PondEnvironment {
-  scene.fog = new THREE.FogExp2(0x0a2840, 0.016)
-  scene.background = new THREE.Color(0x061820)
+  scene.fog = new THREE.FogExp2(0x0e3858, 0.011)
+  scene.background = new THREE.Color(0x0a2848)
 
   addLighting(scene)
   addTerrain(scene)
@@ -46,10 +46,10 @@ export function buildPondEnvironment(scene: THREE.Scene): PondEnvironment {
 }
 
 function addLighting(scene: THREE.Scene): void {
-  scene.add(new THREE.HemisphereLight(0x4080a8, 0x1a3020, 0.6))
-  scene.add(new THREE.AmbientLight(0x102030, 0.4))
+  scene.add(new THREE.HemisphereLight(0x5098b8, 0x284838, 0.85))
+  scene.add(new THREE.AmbientLight(0x284050, 0.55))
 
-  const sun = new THREE.DirectionalLight(0x90b8d8, 0.55)
+  const sun = new THREE.DirectionalLight(0xa8cce8, 0.78)
   sun.position.set(20, 35, 15)
   sun.castShadow = true
   sun.shadow.camera.near = 1

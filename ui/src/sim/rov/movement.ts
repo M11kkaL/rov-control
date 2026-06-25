@@ -30,7 +30,7 @@ const START: State = {
   velocity: 0,
 }
 
-const HEADLIGHT_ON = 28
+const HEADLIGHT_ON = 52
 
 export class ROVMovement {
   private target: State = { ...START }

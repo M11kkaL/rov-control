@@ -17,7 +17,7 @@ export function createRenderer(container: HTMLElement): THREE.WebGLRenderer {
   renderer.setSize(container.clientWidth, container.clientHeight)
   renderer.setClearColor(0x020810)
   renderer.toneMapping = THREE.ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.15
+  renderer.toneMappingExposure = 1.38
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = THREE.PCFSoftShadowMap
   container.appendChild(renderer.domElement)
@@ -45,7 +45,7 @@ export function createNoseCamera(): THREE.PerspectiveCamera {
 }
 
 export function createHeadlight(): THREE.SpotLight {
-  const light = new THREE.SpotLight(0xc8e8ff, 28, 22, Math.PI / 5, 0.45, 1.2)
+  const light = new THREE.SpotLight(0xd8f0ff, 48, 30, Math.PI / 4.5, 0.4, 1.1)
   light.position.set(0, 0.04, -0.48)
   light.target.position.set(0, -0.5, -8)
   light.castShadow = true
