@@ -20,46 +20,46 @@ export function Header({
   onToggleRecording,
 }: HeaderProps) {
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-white/10 bg-bg-panel px-4">
-      <div className="flex min-w-[180px] items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-accent-cyan/15 ring-1 ring-accent-cyan/30">
-          <svg viewBox="0 0 24 24" className="h-4 w-4 text-accent-cyan" fill="currentColor">
+    <header className="flex h-11 shrink-0 items-center justify-between border-b border-white/[0.06] bg-bg-panel px-4 shadow-[0_1px_0_rgba(0,212,170,0.06)]">
+      <div className="flex min-w-[200px] items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent-teal/20 to-accent-cyan/10 ring-1 ring-accent-teal/25">
+          <svg viewBox="0 0 24 24" className="h-4 w-4 text-accent-teal" fill="currentColor">
             <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.2l6 3.75v7.5L12 19.2l-6-3.75v-7.5L12 4.2z" />
           </svg>
         </div>
-        <span className="text-sm font-semibold tracking-wide text-white">{APP_NAME}</span>
+        <div>
+          <span className="block text-sm font-semibold tracking-wide text-white">{APP_NAME}</span>
+          <span className="block text-[9px] uppercase tracking-[0.2em] text-white/30">Control Station</span>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <ModeBadge mode={mode} />
         <StatusPill connected={connected} />
-        <span className="font-mono text-xs tabular-nums text-white/50">
-          {connected && ping !== null ? `${ping} ms` : '— ms'}
+        <span className="tech-chip">
+          <span className="text-white/30">PING</span>
+          {connected && ping !== null ? `${ping} ms` : '—'}
         </span>
       </div>
 
-      <div className="flex min-w-[220px] items-center justify-end gap-4">
+      <div className="flex min-w-[240px] items-center justify-end gap-3">
         <button
           type="button"
           onClick={onToggleRecording}
           disabled={!connected}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:bg-white/5 disabled:opacity-40"
+          className={`tech-chip transition-colors hover:border-white/15 disabled:opacity-40 ${
+            recording ? 'border-danger/40 text-danger' : ''
+          }`}
           title={recording ? 'Stop and download recording' : 'Start telemetry recording'}
         >
           <span
-            className={`h-2.5 w-2.5 rounded-full ${recording ? 'animate-pulse bg-danger shadow-[0_0_8px_#ef4444]' : 'bg-white/20'}`}
+            className={`h-2 w-2 rounded-full ${recording ? 'animate-pulse bg-danger' : 'bg-white/25'}`}
           />
-          <span className={`text-[10px] font-bold uppercase tracking-widest ${recording ? 'text-danger' : 'text-white/30'}`}>
-            Rec
-          </span>
-          {recording && (
-            <span className="font-mono text-[10px] text-white/40">{recordFrames}</span>
-          )}
+          REC
+          {recording && <span>{recordFrames}</span>}
         </button>
-        <span className="font-mono text-xs tabular-nums text-white/70">{time}</span>
-        <span className="rounded border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/40">
-          v{APP_VERSION}
-        </span>
+        <span className="tech-chip text-white/70">{time}</span>
+        <span className="tech-chip text-white/40">v{APP_VERSION}</span>
       </div>
     </header>
   )
@@ -69,10 +69,10 @@ function ModeBadge({ mode }: { mode: OperationMode }) {
   const isSim = mode === 'SIM'
   return (
     <span
-      className={`rounded px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
+      className={`rounded-md px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] ${
         isSim
-          ? 'bg-accent-blue/15 text-accent-blue ring-1 ring-accent-blue/30'
-          : 'bg-accent-cyan/15 text-accent-cyan ring-1 ring-accent-cyan/30'
+          ? 'bg-accent-blue/10 text-accent-blue ring-1 ring-accent-blue/25'
+          : 'bg-accent-teal/10 text-accent-teal ring-1 ring-accent-teal/25'
       }`}
     >
       {mode}
@@ -82,13 +82,11 @@ function ModeBadge({ mode }: { mode: OperationMode }) {
 
 function StatusPill({ connected }: { connected: boolean }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="tech-chip">
       <span
-        className={`h-2 w-2 rounded-full ${connected ? 'bg-accent-cyan shadow-[0_0_8px_#1dd4ff]' : 'bg-danger animate-pulse'}`}
+        className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-accent-teal shadow-[0_0_6px_#00d4aa]' : 'animate-pulse bg-danger'}`}
       />
-      <span className="text-[11px] font-medium uppercase tracking-wider text-white/60">
-        {connected ? 'Online' : 'Offline'}
-      </span>
+      {connected ? 'Online' : 'Offline'}
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Telemetry } from '../../types'
+import { PanelCard } from '../layout/PanelCard'
 
 type LogEntry = {
   id: number
@@ -31,12 +32,8 @@ export function TelemetryLog({ telemetry, connected }: TelemetryLogProps) {
   }, [])
 
   useEffect(() => {
-    if (connected && !wasConnected.current) {
-      addEntry('info', 'WebSocket connected')
-    }
-    if (!connected && wasConnected.current) {
-      addEntry('error', 'WebSocket disconnected')
-    }
+    if (connected && !wasConnected.current) addEntry('info', 'WebSocket connected')
+    if (!connected && wasConnected.current) addEntry('error', 'WebSocket disconnected')
     wasConnected.current = connected
   }, [connected, addEntry])
 
@@ -56,37 +53,30 @@ export function TelemetryLog({ telemetry, connected }: TelemetryLogProps) {
   }, [telemetry.warnings, addEntry])
 
   return (
-    <div className="glass-panel flex flex-col overflow-hidden p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-white/50">Telemetry Log</span>
-        <span className="font-mono text-[10px] text-white/30">{entries.length} events</span>
-      </div>
-
-      <div className="flex-1 space-y-1 overflow-y-auto pr-1">
+    <PanelCard title="Event Log" action={<span className="text-[9px] text-white/30">{entries.length} events</span>} className="h-full">
+      <div className="h-[88px] space-y-1 overflow-y-auto pr-1">
         {entries.length === 0 ? (
-          <p className="text-xs text-white/25">Waiting for events…</p>
+          <p className="text-[10px] text-white/25">Waiting for events…</p>
         ) : (
           entries.map((entry) => <LogLine key={entry.id} entry={entry} />)
         )}
       </div>
-    </div>
+    </PanelCard>
   )
 }
 
 function LogLine({ entry }: { entry: LogEntry }) {
   const levelStyles = {
-    info: 'text-accent-cyan',
+    info: 'text-accent-teal',
     warning: 'text-warning',
     error: 'text-danger',
   }
 
   return (
-    <div className="flex gap-2 font-mono text-[10px] leading-relaxed">
+    <div className="flex gap-2 font-mono text-[9px] leading-relaxed">
       <span className="shrink-0 text-white/25">{entry.time}</span>
-      <span className={`shrink-0 font-bold uppercase ${levelStyles[entry.level]}`}>
-        {entry.level}
-      </span>
-      <span className="text-white/60">{entry.message}</span>
+      <span className={`shrink-0 font-bold uppercase ${levelStyles[entry.level]}`}>{entry.level}</span>
+      <span className="text-white/55">{entry.message}</span>
     </div>
   )
 }

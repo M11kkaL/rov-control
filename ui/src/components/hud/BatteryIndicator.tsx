@@ -5,9 +5,9 @@ type BatteryIndicatorProps = {
 export function BatteryIndicator({ level }: BatteryIndicatorProps) {
   const pct = Math.max(0, Math.min(100, level))
   const color =
-    pct > 50 ? 'text-accent-cyan' : pct > 20 ? 'text-warning' : 'text-danger'
+    pct > 50 ? 'text-accent-teal' : pct > 20 ? 'text-warning' : 'text-danger'
   const barColor =
-    pct > 50 ? 'from-accent-cyan to-accent-blue' : pct > 20 ? 'from-warning to-warning' : 'from-danger to-danger'
+    pct > 50 ? 'from-accent-teal to-accent-blue/80' : pct > 20 ? 'from-warning to-warning' : 'from-danger to-danger'
 
   return (
     <div>

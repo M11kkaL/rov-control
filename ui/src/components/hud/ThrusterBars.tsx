@@ -36,7 +36,7 @@ function ThrusterBar({ label, value }: { label: string; value: number }) {
         <div className="absolute left-0 right-0 top-1/2 h-px bg-white/20" />
         <div
           className={`absolute left-0 right-0 rounded-full transition-all duration-75 ${
-            isPositive ? 'bg-accent-cyan' : 'bg-warning'
+            isPositive ? 'bg-accent-teal' : 'bg-warning'
           }`}
           style={{
             height: `${magnitude * 50}%`,

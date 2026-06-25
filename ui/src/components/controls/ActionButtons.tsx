@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { PanelCard } from '../layout/PanelCard'
 
 export type UiControlFlags = {
   lights: boolean
@@ -38,7 +39,7 @@ const ACTIONS: {
   },
   {
     key: 'holdDepth',
-    label: 'Hold Depth',
+    label: 'Hold',
     Icon: () => (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M12 3v18M7 8l5 5 5-5" />
@@ -47,7 +48,7 @@ const ACTIONS: {
   },
   {
     key: 'cameraTilt',
-    label: 'Cam Tilt',
+    label: 'Gimbal',
     Icon: () => (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M4 7h4l2-2h4l2 2h4v12H4V7z" />
@@ -66,16 +67,14 @@ export function ActionButtons({ flags, onChange, emergencyStop }: ActionButtonsP
   }
 
   return (
-    <div className="glass-panel flex flex-col items-center justify-center p-3">
-      <span className="mb-3 text-[11px] font-bold uppercase tracking-wider text-white/50">Actions</span>
-
+    <PanelCard title="Vehicle Actions" className="h-full">
       {emergencyStop && (
-        <div className="mb-3 w-full rounded-md bg-danger/20 px-3 py-1.5 text-center text-xs font-bold uppercase tracking-widest text-danger ring-1 ring-danger/40">
-          Emergency Stop
+        <div className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-center text-[10px] font-bold uppercase tracking-[0.14em] text-danger">
+          Emergency Stop Active
         </div>
       )}
 
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="grid grid-cols-4 gap-2">
         {ACTIONS.map(({ key, label, Icon }) => {
           const active = flags[key]
           return (
@@ -83,18 +82,18 @@ export function ActionButtons({ flags, onChange, emergencyStop }: ActionButtonsP
               key={key}
               type="button"
               onClick={() => toggle(key)}
-              className={`flex flex-col items-center gap-1.5 rounded-lg px-3 py-2 transition-all ${
+              className={`flex flex-col items-center gap-2 rounded-xl px-3 py-3 transition-all ${
                 active
-                  ? 'bg-accent-cyan/15 text-accent-cyan ring-1 ring-accent-cyan/40'
-                  : 'bg-white/5 text-white/50 ring-1 ring-white/10 hover:bg-white/10 hover:text-white/70'
+                  ? 'bg-accent-teal/10 text-accent-teal ring-1 ring-accent-teal/30'
+                  : 'bg-white/[0.03] text-white/45 ring-1 ring-white/[0.06] hover:bg-white/[0.06] hover:text-white/65'
               }`}
             >
               <Icon />
-              <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+              <span className="text-[9px] font-semibold uppercase tracking-wider">{label}</span>
             </button>
           )
         })}
       </div>
-    </div>
+    </PanelCard>
   )
 }

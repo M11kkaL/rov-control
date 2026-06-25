@@ -3,11 +3,21 @@ import { VideoFeed, useSimBridge } from './components'
 import { Header } from './components/layout/Header'
 import { Footer } from './components/layout/Footer'
 import { HudPanel } from './components/hud/HudPanel'
+import { HudFrame } from './components/layout/HudFrame'
+import { Sidebar } from './components/layout/Sidebar'
+import { MapIcon, InputIcon } from './components/layout/icons'
+import { MissionOverlay } from './components/hud/MissionOverlay'
+import { GamepadStatus } from './components/controls/GamepadStatus'
 import type { UiControlFlags } from './components/controls/ActionButtons'
 import { getOperationMode } from './config/app'
 import { useCommandSender, useControlInput, useGamepadConnected, useWebSocket } from './hooks'
 import { useClock } from './hooks/useClock'
 import { useTelemetryRecorder } from './hooks/useTelemetryRecorder'
+
+const LEFT_TABS = [
+  { id: 'mission', label: 'Map', icon: <MapIcon /> },
+  { id: 'input', label: 'Input', icon: <InputIcon /> },
+]
 
 function App() {
   const bridge = useSimBridge()
@@ -25,6 +35,9 @@ function App() {
   })
   const [recording, setRecording] = useState(false)
   const { frameCount, download } = useTelemetryRecorder(telemetry, recording)
+
+  const [leftTab, setLeftTab] = useState('mission')
+  const [leftExpanded, setLeftExpanded] = useState(true)
 
   useCommandSender(service, control, uiFlags)
 
@@ -49,16 +62,40 @@ function App() {
         onToggleRecording={handleToggleRecording}
       />
 
-      <main className="relative min-h-0 flex-1">
-        <VideoFeed bridge={bridge} />
-        <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_120px_rgba(0,8,16,0.8)]" />
-        <HudPanel telemetry={telemetry} connected={connected} />
-      </main>
+      <div className="flex min-h-0 flex-1">
+        <Sidebar
+          side="left"
+          expanded={leftExpanded}
+          onToggleExpanded={() => setLeftExpanded((v) => !v)}
+          tabs={LEFT_TABS}
+          activeTab={leftTab}
+          onTabChange={setLeftTab}
+        >
+          <div className="p-2">
+            {leftTab === 'mission' && (
+              <MissionOverlay x={telemetry.x} z={telemetry.z} velocity={telemetry.velocity} />
+            )}
+            {leftTab === 'input' && (
+              <GamepadStatus
+                control={control}
+                gamepadConnected={gamepadConnected}
+                cameraTiltMode={uiFlags.cameraTilt}
+              />
+            )}
+          </div>
+        </Sidebar>
+
+        <main className="relative min-h-0 min-w-0 flex-1">
+          <VideoFeed bridge={bridge} />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,8,16,0.55)_100%)]" />
+          <HudFrame />
+          <HudPanel telemetry={telemetry} connected={connected} />
+        </main>
+      </div>
 
       <Footer
         control={control}
         telemetry={telemetry}
-        gamepadConnected={gamepadConnected}
         uiFlags={uiFlags}
         onUiFlagsChange={setUiFlags}
       />

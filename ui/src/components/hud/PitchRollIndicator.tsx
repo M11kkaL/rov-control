@@ -30,9 +30,9 @@ export function PitchRollIndicator({ pitch, roll, cameraTilt = 0 }: PitchRollInd
             className="absolute left-0 right-0 h-1/2 bg-bg-dark/80"
             style={{ top: `${50 - pitchClamped - camClamped * 0.5 + 50}%` }}
           />
-          <div className="absolute left-1/2 top-1/2 h-px w-full -translate-y-1/2 bg-accent-cyan/60" />
+          <div className="absolute left-1/2 top-1/2 h-px w-full -translate-y-1/2 bg-accent-teal/50" />
         </div>
-        <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-cyan shadow-[0_0_6px_#1dd4ff]" />
+        <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-teal shadow-[0_0_6px_#00d4aa]" />
       </div>
     </div>
   )
@@ -51,7 +51,7 @@ function AttitudeMini({
     <div className="flex-1">
       <span className="text-[9px] font-semibold uppercase tracking-wider text-white/35">{label}</span>
       <div
-        className={`font-mono text-sm font-bold tabular-nums ${accent ? 'text-accent-cyan' : 'text-white'}`}
+        className={`font-mono text-sm font-semibold tabular-nums ${accent ? 'text-accent-teal' : 'text-white'}`}
       >
         {value >= 0 ? '+' : ''}
         {value.toFixed(0)}°
