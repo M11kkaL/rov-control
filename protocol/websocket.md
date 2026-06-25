@@ -23,7 +23,9 @@ Configure the UI with `VITE_WS_URL` in `.env`.
 | Direction    | Message type | Document                     |
 |--------------|--------------|------------------------------|
 | UI → Backend | `command`    | [commands.md](./commands.md) |
+| UI → Backend | `ping`       | This document (RTT)          |
 | Backend → UI | `telemetry`  | [telemetry.md](./telemetry.md) |
+| Backend → UI | `pong`       | This document (RTT)          |
 
 ## Simulation video
 
@@ -38,3 +40,19 @@ Backend mock physics is enabled by default (`MOCK_MODE=1`). Set `MOCK_MODE=0` fo
 HTTP `GET /health` returns `200 ok` for liveness probes.
 
 HTTP `GET /sim/state` returns the latest telemetry snapshot as JSON (debug).
+
+## Application ping (RTT)
+
+UI may send periodic ping messages to measure round-trip latency:
+
+```json
+{ "type": "ping", "id": 1, "timestamp": 1710000000000 }
+```
+
+Backend responds immediately:
+
+```json
+{ "type": "pong", "id": 1, "timestamp": 1710000000000 }
+```
+
+RTT = `Date.now() - timestamp` when the pong is received (using the client send time stored by `id`).

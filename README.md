@@ -151,18 +151,19 @@ rov-system/
 | Throttle | W / S | Left stick Y |
 | Yaw | A / D | Left stick X |
 | Vertical | Q / E | Right stick Y |
-| Lateral | R / F | Right stick X |
+| Lateral | ← / → | Right stick X |
 | Emergency stop | Space (hold) | Button 0 |
 
 ## Roadmap
 
 - [ ] Real hardware motor interface (`MOCK_MODE=0`)
-- [ ] Simulation / real mode toggle in UI
+- [x] Simulation / real mode toggle in UI (`VITE_ROV_MODE`)
 - [ ] WebSocket authentication
-- [ ] Backend unit tests & CI pipeline
+- [x] Backend unit tests & CI pipeline
 - [ ] UI component tests
 - [ ] Improved underwater visuals (caustics, seabed textures)
-- [ ] Mission recording & playback
+- [x] Mission recording (client-side JSONL/CSV export)
+- [ ] Mission playback & waypoints
 - [ ] Multi-client observer mode
 - [ ] Thruster failure & warning scenarios
 

@@ -15,17 +15,22 @@ type Thrusters struct {
 }
 
 type Snapshot struct {
-	Depth     float64          `json:"depth"`
-	Heading   float64          `json:"heading"`
-	Pitch     float64          `json:"pitch"`
-	Battery   float64          `json:"battery"`
-	X         float64          `json:"x"`
-	Z         float64          `json:"z"`
-	Velocity  float64          `json:"velocity"`
-	Command   control.Command  `json:"command"`
-	Thrusters Thrusters        `json:"thrusters"`
-	Warnings  []string         `json:"warnings"`
-	Timestamp int64            `json:"timestamp"`
+	Depth           float64         `json:"depth"`
+	Heading         float64         `json:"heading"`
+	Pitch           float64         `json:"pitch"`
+	Roll            float64         `json:"roll"`
+	CameraTilt      float64         `json:"cameraTilt"`
+	FlightMode      string          `json:"flightMode"`
+	Lights          bool            `json:"lights"`
+	HoldDepthTarget float64         `json:"holdDepthTarget,omitempty"`
+	Battery         float64         `json:"battery"`
+	X               float64         `json:"x"`
+	Z               float64         `json:"z"`
+	Velocity        float64         `json:"velocity"`
+	Command         control.Command `json:"command"`
+	Thrusters       Thrusters       `json:"thrusters"`
+	Warnings        []string        `json:"warnings"`
+	Timestamp       int64           `json:"timestamp"`
 }
 
 type Message struct {
@@ -36,6 +41,9 @@ type Message struct {
 func NewMessage(snapshot Snapshot) Message {
 	if snapshot.Warnings == nil {
 		snapshot.Warnings = []string{}
+	}
+	if snapshot.FlightMode == "" {
+		snapshot.FlightMode = control.FlightManual
 	}
 	if snapshot.Timestamp == 0 {
 		snapshot.Timestamp = time.Now().UnixMilli()

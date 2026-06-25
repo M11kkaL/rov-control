@@ -1,24 +1,22 @@
 import { BatteryIndicator } from './BatteryIndicator'
 import { DepthIndicator } from './DepthIndicator'
 import { HeadingIndicator } from './HeadingIndicator'
+import { MissionOverlay } from './MissionOverlay'
 import { PitchRollIndicator } from './PitchRollIndicator'
 import { ThrusterBars } from './ThrusterBars'
 import type { Telemetry } from '../../types'
 
-export type FlightMode = 'MANUAL' | 'STABILIZED' | 'HOLD DEPTH'
-
 type HudPanelProps = {
   telemetry: Telemetry
   connected: boolean
-  holdDepth: boolean
 }
 
-export function HudPanel({ telemetry, connected, holdDepth }: HudPanelProps) {
-  const modes: { label: FlightMode; active: boolean }[] = [
-    { label: 'MANUAL', active: !holdDepth },
-    { label: 'STABILIZED', active: false },
-    { label: 'HOLD DEPTH', active: holdDepth },
-  ]
+export function HudPanel({ telemetry, connected }: HudPanelProps) {
+  const modes = [
+    { label: 'MANUAL', active: telemetry.flightMode === 'manual' },
+    { label: 'STABILIZED', active: telemetry.flightMode === 'stabilized' },
+    { label: 'HOLD DEPTH', active: telemetry.flightMode === 'hold_depth' },
+  ] as const
 
   return (
     <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3">
@@ -30,13 +28,18 @@ export function HudPanel({ telemetry, connected, holdDepth }: HudPanelProps) {
         </div>
       )}
 
-      <div className="flex flex-1 justify-end">
+      <div className="flex flex-1 justify-between gap-3">
+        <MissionOverlay x={telemetry.x} z={telemetry.z} velocity={telemetry.velocity} />
         <aside className="glass-panel flex w-44 flex-col gap-3 p-3">
-          <DepthIndicator depth={telemetry.depth} />
+          <DepthIndicator depth={telemetry.depth} holdTarget={telemetry.holdDepthTarget} />
           <div className="h-px bg-white/10" />
           <HeadingIndicator heading={telemetry.heading} />
           <div className="h-px bg-white/10" />
-          <PitchRollIndicator pitch={telemetry.pitch} roll={0} />
+          <PitchRollIndicator
+            pitch={telemetry.pitch}
+            roll={telemetry.roll}
+            cameraTilt={telemetry.cameraTilt}
+          />
           <div className="h-px bg-white/10" />
           <BatteryIndicator level={telemetry.battery} />
         </aside>

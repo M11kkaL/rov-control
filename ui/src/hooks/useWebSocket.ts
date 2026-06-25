@@ -7,6 +7,10 @@ const DEFAULT_TELEMETRY: Telemetry = {
   depth: 2,
   heading: 0,
   pitch: 0,
+  roll: 0,
+  cameraTilt: 0,
+  flightMode: 'manual',
+  lights: false,
   battery: 100,
   x: 0,
   z: 0,
@@ -21,12 +25,14 @@ export function useWebSocket(bridge: BackendCommandBridge | null) {
   const serviceRef = useRef<WebSocketService | null>(null)
   const [connected, setConnected] = useState(false)
   const [telemetry, setTelemetry] = useState<Telemetry>(DEFAULT_TELEMETRY)
+  const [ping, setPing] = useState<number | null>(null)
 
   useEffect(() => {
     const service = new WebSocketService()
     serviceRef.current = service
 
     service.setStatusHandler(setConnected)
+    service.setPingHandler(setPing)
     service.setTelemetryHandler((payload) => {
       setTelemetry(payload)
       bridge?.handleBackendMessage(payload)
@@ -39,5 +45,5 @@ export function useWebSocket(bridge: BackendCommandBridge | null) {
     }
   }, [bridge])
 
-  return { connected, telemetry, service: serviceRef }
+  return { connected, telemetry, ping, service: serviceRef }
 }

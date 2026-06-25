@@ -1,18 +1,21 @@
 type PitchRollIndicatorProps = {
   pitch: number
   roll: number
+  cameraTilt?: number
 }
 
-export function PitchRollIndicator({ pitch, roll }: PitchRollIndicatorProps) {
+export function PitchRollIndicator({ pitch, roll, cameraTilt = 0 }: PitchRollIndicatorProps) {
   const pitchClamped = Math.max(-45, Math.min(45, pitch))
   const rollClamped = Math.max(-45, Math.min(45, roll))
+  const camClamped = Math.max(-35, Math.min(35, cameraTilt))
 
   return (
     <div>
       <span className="hud-label">Attitude</span>
-      <div className="mt-2 flex gap-3">
+      <div className="mt-2 flex gap-2">
         <AttitudeMini label="Pitch" value={pitchClamped} />
         <AttitudeMini label="Roll" value={rollClamped} />
+        <AttitudeMini label="Cam" value={camClamped} accent />
       </div>
       <div className="relative mx-auto mt-2 h-16 w-16 overflow-hidden rounded-full border border-white/15 bg-black/40">
         <div
@@ -21,11 +24,11 @@ export function PitchRollIndicator({ pitch, roll }: PitchRollIndicatorProps) {
         >
           <div
             className="absolute left-0 right-0 h-1/2 bg-accent-blue/30"
-            style={{ top: `${50 - pitchClamped}%` }}
+            style={{ top: `${50 - pitchClamped - camClamped * 0.5}%` }}
           />
           <div
             className="absolute left-0 right-0 h-1/2 bg-bg-dark/80"
-            style={{ top: `${50 - pitchClamped + 50}%` }}
+            style={{ top: `${50 - pitchClamped - camClamped * 0.5 + 50}%` }}
           />
           <div className="absolute left-1/2 top-1/2 h-px w-full -translate-y-1/2 bg-accent-cyan/60" />
         </div>
@@ -35,11 +38,21 @@ export function PitchRollIndicator({ pitch, roll }: PitchRollIndicatorProps) {
   )
 }
 
-function AttitudeMini({ label, value }: { label: string; value: number }) {
+function AttitudeMini({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string
+  value: number
+  accent?: boolean
+}) {
   return (
     <div className="flex-1">
       <span className="text-[9px] font-semibold uppercase tracking-wider text-white/35">{label}</span>
-      <div className="font-mono text-sm font-bold tabular-nums text-white">
+      <div
+        className={`font-mono text-sm font-bold tabular-nums ${accent ? 'text-accent-cyan' : 'text-white'}`}
+      >
         {value >= 0 ? '+' : ''}
         {value.toFixed(0)}°
       </div>

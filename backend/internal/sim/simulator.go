@@ -10,36 +10,49 @@ import (
 )
 
 const (
-	depthRate    = 2.0
-	headingRate  = 45.0
-	pitchRate    = 30.0
-	maxPitch     = 45.0
-	moveRate     = 1.5
-	batteryDrain = 0.01
+	depthRate       = 2.0
+	headingRate     = 45.0
+	pitchRate       = 30.0
+	maxPitch        = 45.0
+	maxRoll         = 30.0
+	camTiltRate     = 25.0
+	maxCamTilt      = 35.0
+	moveRate        = 1.5
+	batteryDrain    = 0.01
+	stabilizeRate   = 50.0
+	holdDepthGain   = 1.8
+	rollResponse    = 4.0
+	rollStabilize   = 5.0
 )
 
 type Simulator struct {
-	depth     float64
-	heading   float64
-	battery   float64
-	x         float64
-	z         float64
-	pitch     float64
-	velocity  float64
-	lastX     float64
-	lastZ     float64
-	lastDepth float64
-	last      telemetry.Snapshot
-	enabled   bool
+	depth           float64
+	heading         float64
+	battery         float64
+	x               float64
+	z               float64
+	pitch           float64
+	roll            float64
+	cameraTilt      float64
+	velocity        float64
+	holdDepthTarget float64
+	prevFlightMode  string
+	lights          bool
+	lastX           float64
+	lastZ           float64
+	lastDepth       float64
+	last            telemetry.Snapshot
+	enabled         bool
 }
 
 func New(enabled bool) *Simulator {
 	s := &Simulator{
-		battery: 100,
-		depth:   2.0,
-		x:       0,
-		z:       0,
-		enabled: enabled,
+		battery:        100,
+		depth:          2.0,
+		x:              0,
+		z:              0,
+		prevFlightMode: control.FlightManual,
+		enabled:        enabled,
 	}
 	s.last = s.snapshot(control.Command{}, telemetry.Thrusters{}, nil)
 	return s
@@ -51,38 +64,40 @@ func (s *Simulator) Tick(cmd control.Command, dt float64) telemetry.Snapshot {
 		return s.last
 	}
 
-	thrusters := mixThrusters(cmd)
+	applied := s.applyFlightMode(cmd.Clamped(), dt)
+	thrusters := mixThrusters(applied)
 
-	if cmd.EmergencyStop {
+	if applied.EmergencyStop {
 		s.velocity = 0
-		s.last = s.snapshot(cmd, thrusters, []string{"EMERGENCY STOP"})
+		s.last = s.snapshot(applied, thrusters, []string{"EMERGENCY STOP"})
 		return s.last
 	}
 
+	s.lights = applied.Lights
 	s.lastX = s.x
 	s.lastZ = s.z
 	s.lastDepth = s.depth
 
-	s.depth -= cmd.Vertical * depthRate * dt
-	if s.depth < 0 {
-		s.depth = 0
+	s.cameraTilt += applied.CameraTilt * camTiltRate * dt
+	if s.cameraTilt > maxCamTilt {
+		s.cameraTilt = maxCamTilt
+	} else if s.cameraTilt < -maxCamTilt {
+		s.cameraTilt = -maxCamTilt
 	}
 
-	s.heading = math.Mod(s.heading-cmd.Yaw*headingRate*dt+360, 360)
+	s.depth -= applied.Vertical * depthRate * dt
 
-	s.pitch += cmd.Pitch * pitchRate * dt
-	if s.pitch > maxPitch {
-		s.pitch = maxPitch
-	} else if s.pitch < -maxPitch {
-		s.pitch = -maxPitch
-	}
+	s.heading = math.Mod(s.heading-applied.Yaw*headingRate*dt+360, 360)
+
+	s.integratePitch(applied, dt)
+	s.integrateRoll(applied, dt)
 
 	rad := s.heading * math.Pi / 180
-	forward := cmd.Throttle * moveRate * dt
-	strafe := cmd.Lateral * moveRate * dt
-	// Three.js forward = -Z at heading 0
+	forward := applied.Throttle * moveRate * dt
+	strafe := applied.Lateral * moveRate * dt
+	// Body-relative: forward = (-sin, -cos), strafe right = (cos, -sin) in XZ
 	s.x += -forward*math.Sin(rad) + strafe*math.Cos(rad)
-	s.z += -forward*math.Cos(rad) + strafe*math.Sin(rad)
+	s.z += -forward*math.Cos(rad) - strafe*math.Sin(rad)
 
 	s.clampToPond()
 
@@ -95,8 +110,81 @@ func (s *Simulator) Tick(cmd control.Command, dt float64) telemetry.Snapshot {
 
 	s.battery = math.Max(0, s.battery-batteryDrain)
 
-	s.last = s.snapshot(cmd, thrusters, s.pondWarnings())
+	s.last = s.snapshot(applied, thrusters, s.pondWarnings())
 	return s.last
+}
+
+func (s *Simulator) applyFlightMode(cmd control.Command, _ float64) control.Command {
+	if cmd.FlightMode != s.prevFlightMode {
+		if cmd.FlightMode == control.FlightHoldDepth {
+			s.holdDepthTarget = s.depth
+		}
+		s.prevFlightMode = cmd.FlightMode
+	}
+
+	if cmd.FlightMode == control.FlightHoldDepth {
+		err := s.holdDepthTarget - s.depth
+		cmd.Vertical = clamp(err * holdDepthGain)
+	}
+
+	return cmd
+}
+
+func (s *Simulator) integratePitch(cmd control.Command, dt float64) {
+	if cmd.FlightMode == control.FlightStabilized {
+		if math.Abs(cmd.Pitch) > 0.01 {
+			s.pitch += cmd.Pitch * pitchRate * dt
+		} else {
+			s.pitch = stabilizeAngle(s.pitch, stabilizeRate, dt)
+		}
+	} else {
+		s.pitch += cmd.Pitch * pitchRate * dt
+	}
+
+	if s.pitch > maxPitch {
+		s.pitch = maxPitch
+	} else if s.pitch < -maxPitch {
+		s.pitch = -maxPitch
+	}
+}
+
+func (s *Simulator) integrateRoll(cmd control.Command, dt float64) {
+	// Bank into turn / strafe (matches Three.js roll convention).
+	targetRoll := -cmd.Yaw*12 - cmd.Lateral*8
+	s.roll += (targetRoll - s.roll) * rollResponse * dt
+
+	if cmd.FlightMode == control.FlightStabilized {
+		s.roll = stabilizeAngle(s.roll, rollStabilize*10, dt)
+	}
+
+	if s.roll > maxRoll {
+		s.roll = maxRoll
+	} else if s.roll < -maxRoll {
+		s.roll = -maxRoll
+	}
+}
+
+func stabilizeAngle(angle, rate, dt float64) float64 {
+	if math.Abs(angle) < 0.05 {
+		return 0
+	}
+	step := rate * dt
+	if angle > 0 {
+		angle -= step
+		if angle < 0 {
+			return 0
+		}
+		return angle
+	}
+	angle += step
+	if angle > 0 {
+		return 0
+	}
+	return angle
+}
+
+func clamp(v float64) float64 {
+	return math.Max(-1, math.Min(1, v))
 }
 
 func (s *Simulator) LastSnapshot() telemetry.Snapshot {
@@ -122,16 +210,25 @@ func (s *Simulator) snapshot(cmd control.Command, thrusters telemetry.Thrusters,
 	if warnings == nil {
 		warnings = []string{}
 	}
+	holdTarget := 0.0
+	if cmd.FlightMode == control.FlightHoldDepth {
+		holdTarget = s.holdDepthTarget
+	}
 	return telemetry.Snapshot{
-		Depth:     s.depth,
-		Heading:   s.heading,
-		Pitch:     s.pitch,
-		Battery:   s.battery,
-		X:         s.x,
-		Z:         s.z,
-		Velocity:  s.velocity,
-		Command:   cmd,
-		Thrusters: thrusters,
-		Warnings:  warnings,
+		Depth:           s.depth,
+		Heading:         s.heading,
+		Pitch:           s.pitch,
+		Roll:            s.roll,
+		CameraTilt:      s.cameraTilt,
+		FlightMode:      cmd.FlightMode,
+		Lights:          s.lights,
+		HoldDepthTarget: holdTarget,
+		Battery:         s.battery,
+		X:               s.x,
+		Z:               s.z,
+		Velocity:        s.velocity,
+		Command:         cmd,
+		Thrusters:       thrusters,
+		Warnings:        warnings,
 	}
 }

@@ -70,9 +70,12 @@ export function createROV(): ROVParts {
 
   const camera = createNoseCamera()
   const headlight = createHeadlight()
+  // Headlight follows camera gimbal tilt
+  headlight.position.set(0, -0.04, 0.07)
+  headlight.target.position.set(0, -0.5, -8)
+  camera.add(headlight)
+  camera.add(headlight.target)
   group.add(camera)
-  group.add(headlight)
-  group.add(headlight.target)
 
   group.position.set(0, -2, 0)
   return { group, camera, headlight }

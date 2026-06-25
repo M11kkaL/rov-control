@@ -19,7 +19,7 @@ The architecture must allow switching between these modes without changing UI or
 ### Backend (Go)
 The backend is the “brain” of the system. Responsibilities:
 - WebSocket server for UI communication
-- Command handling (throttle, yaw, vertical, lateral)
+- Command handling (throttle, yaw, pitch, vertical, lateral, flight modes, lights)
 - Telemetry broadcasting (depth, heading, velocity, battery, thruster output, echoed command)
 - Mock physics simulation when `MOCK_MODE=1`
 - Motor mixing logic
@@ -77,12 +77,14 @@ ui/
 All communication is explicit and typed.
 
 ### UI → Backend (Commands)
-- throttle, yaw, vertical, lateral
-- mode switches
+- throttle, yaw, pitch, vertical, lateral
+- flightMode (`manual`, `stabilized`, `hold_depth`)
+- lights, cameraTilt
 - emergency stop
 
 ### Backend → UI (Telemetry)
-- depth, heading, velocity, battery
+- depth, heading, pitch, roll, velocity, battery
+- cameraTilt, flightMode, lights, holdDepthTarget
 - thruster outputs
 - echoed `command` (last applied control)
 - warnings, timestamps

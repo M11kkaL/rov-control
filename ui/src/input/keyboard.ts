@@ -8,8 +8,8 @@ const KEY_BINDINGS: Record<string, Partial<ControlState>> = {
   KeyD: { yaw: 1 },
   KeyQ: { vertical: 1 },
   KeyE: { vertical: -1 },
-  KeyR: { lateral: 1 },
-  KeyF: { lateral: -1 },
+  ArrowLeft: { lateral: -1 },
+  ArrowRight: { lateral: 1 },
   ArrowUp: { pitch: -1 },
   ArrowDown: { pitch: 1 },
 }

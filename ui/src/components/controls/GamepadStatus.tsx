@@ -3,6 +3,7 @@ import type { ControlState } from '../../input'
 type GamepadStatusProps = {
   control: ControlState
   gamepadConnected: boolean
+  cameraTiltMode?: boolean
 }
 
 const KEY_BINDINGS = [
@@ -10,11 +11,11 @@ const KEY_BINDINGS = [
   { keys: 'A / D', action: 'Yaw' },
   { keys: '↑ / ↓', action: 'Pitch' },
   { keys: 'Q / E', action: 'Vertical' },
-  { keys: 'R / F', action: 'Lateral' },
+  { keys: '← / →', action: 'Lateral' },
   { keys: 'Space', action: 'E-Stop' },
 ]
 
-export function GamepadStatus({ control, gamepadConnected }: GamepadStatusProps) {
+export function GamepadStatus({ control, gamepadConnected, cameraTiltMode }: GamepadStatusProps) {
   return (
     <div className="glass-panel flex flex-col overflow-hidden p-3">
       <div className="mb-2 flex items-center justify-between">
@@ -28,7 +29,9 @@ export function GamepadStatus({ control, gamepadConnected }: GamepadStatusProps)
             <kbd className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-white/60">
               {keys}
             </kbd>
-            <span className="text-white/35">{action}</span>
+            <span className="text-white/35">
+              {action === 'Pitch' && cameraTiltMode ? 'Cam Tilt' : action}
+            </span>
           </div>
         ))}
       </div>

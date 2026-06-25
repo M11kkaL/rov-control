@@ -14,6 +14,7 @@ export class SimEngine {
   private scene: THREE.Scene
   private renderer: THREE.WebGLRenderer
   private camera: THREE.PerspectiveCamera
+  private headlight: THREE.SpotLight
   private rovGroup: THREE.Group
   private movement: ROVMovement
   private bridge: BackendCommandBridge
@@ -36,13 +37,28 @@ export class SimEngine {
     const rov = createROV()
     this.rovGroup = rov.group
     this.camera = rov.camera
+    this.headlight = rov.headlight
     this.scene.add(this.rovGroup)
 
     this.renderer = createRenderer(container)
 
-    this.bridge.onCommand((cmd) => this.movement.setPitchInput(cmd.pitch ?? 0))
+    this.bridge.onCommand((cmd) => {
+      this.movement.setVehiclePitchInput(cmd.pitch ?? 0)
+      this.movement.setCameraTiltInput(cmd.cameraTilt ?? 0)
+    })
     this.bridge.onTelemetry((t) =>
-      this.movement.syncFromBackend(t.depth, t.heading, t.pitch, t.x, t.z, t.velocity),
+      this.movement.syncFromBackend(
+        t.depth,
+        t.heading,
+        t.pitch,
+        t.roll,
+        t.cameraTilt,
+        t.lights,
+        t.flightMode,
+        t.x,
+        t.z,
+        t.velocity,
+      ),
     )
 
     this.resizeObserver = new ResizeObserver(() => {
@@ -63,7 +79,7 @@ export class SimEngine {
       this.lastTime = time
 
       this.envUpdate(dt)
-      const telemetry = this.movement.update(dt, this.rovGroup)
+      const telemetry = this.movement.update(dt, this.rovGroup, this.camera, this.headlight)
       this.onSimTelemetry?.(telemetry)
 
       this.renderer.render(this.scene, this.camera)

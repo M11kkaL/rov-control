@@ -23,6 +23,8 @@ export class BackendCommandBridge {
       pitch: 0,
       vertical: payload.thrusters.vertical,
       lateral: (payload.thrusters.left - payload.thrusters.right) / 2,
+      flightMode: payload.flightMode,
+      lights: payload.lights,
     }
 
     for (const listener of this.commandListeners) {
@@ -33,6 +35,10 @@ export class BackendCommandBridge {
       depth: payload.depth,
       heading: payload.heading,
       pitch: payload.pitch ?? 0,
+      roll: payload.roll ?? 0,
+      cameraTilt: payload.cameraTilt ?? 0,
+      lights: payload.lights ?? false,
+      flightMode: payload.flightMode ?? 'manual',
       velocity: payload.velocity ?? 0,
       x: payload.x ?? 0,
       z: payload.z ?? 0,

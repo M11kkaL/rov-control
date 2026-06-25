@@ -1,8 +1,9 @@
 type DepthIndicatorProps = {
   depth: number
+  holdTarget?: number
 }
 
-export function DepthIndicator({ depth }: DepthIndicatorProps) {
+export function DepthIndicator({ depth, holdTarget }: DepthIndicatorProps) {
   const maxDepth = 13
   const pct = Math.min((depth / maxDepth) * 100, 100)
 
@@ -19,6 +20,11 @@ export function DepthIndicator({ depth }: DepthIndicatorProps) {
           style={{ width: `${pct}%` }}
         />
       </div>
+      {holdTarget !== undefined && holdTarget > 0 && (
+        <p className="mt-1 font-mono text-[10px] text-accent-cyan/80">
+          HOLD {holdTarget.toFixed(1)} m
+        </p>
+      )}
     </div>
   )
 }

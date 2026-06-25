@@ -78,7 +78,7 @@ npm run lint
 npm run build
 ```
 
-There are no automated UI tests yet. Verify changes manually in the browser at `http://localhost:5173` with the backend running.
+Backend unit tests live under `backend/internal/`. Run `go test ./...` from `backend/`. There are no automated UI tests yet — verify UI changes manually in the browser at `http://localhost:5173` with the backend running.
 
 ### Full stack smoke test
 

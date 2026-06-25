@@ -61,9 +61,10 @@ type client struct {
 	send chan []byte
 }
 
-type commandMessage struct {
+type inboundMessage struct {
 	Type      string          `json:"type"`
 	Payload   control.Command `json:"payload"`
+	ID        int64           `json:"id"`
 	Timestamp int64           `json:"timestamp"`
 }
 
@@ -84,14 +85,28 @@ func (c *client) readPump() {
 			break
 		}
 
-		var msg commandMessage
+		var msg inboundMessage
 		if err := json.Unmarshal(data, &msg); err != nil {
 			continue
 		}
-		if msg.Type != "command" {
-			continue
+
+		switch msg.Type {
+		case "ping":
+			pong, err := json.Marshal(map[string]any{
+				"type":      "pong",
+				"id":        msg.ID,
+				"timestamp": msg.Timestamp,
+			})
+			if err != nil {
+				continue
+			}
+			select {
+			case c.send <- pong:
+			default:
+			}
+		case "command":
+			c.hub.control.SetCommand(msg.Payload)
 		}
-		c.hub.control.SetCommand(msg.Payload)
 	}
 }
 

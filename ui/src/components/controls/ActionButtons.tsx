@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 export type UiControlFlags = {
   lights: boolean
   holdDepth: boolean
+  stabilized: boolean
   cameraTilt: boolean
 }
 
@@ -23,6 +24,15 @@ const ACTIONS: {
     Icon: () => (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M9 18h6M10 22h4M12 2a7 7 0 017 7c0 2.5-1.5 4.5-3 6H8c-1.5-1.5-3-3.5-3-6a7 7 0 017-7z" />
+      </svg>
+    ),
+  },
+  {
+    key: 'stabilized',
+    label: 'Stabilize',
+    Icon: () => (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z" />
       </svg>
     ),
   },
@@ -49,7 +59,10 @@ const ACTIONS: {
 
 export function ActionButtons({ flags, onChange, emergencyStop }: ActionButtonsProps) {
   const toggle = (key: keyof UiControlFlags) => {
-    onChange({ ...flags, [key]: !flags[key] })
+    const next = { ...flags, [key]: !flags[key] }
+    if (key === 'holdDepth' && next.holdDepth) next.stabilized = false
+    if (key === 'stabilized' && next.stabilized) next.holdDepth = false
+    onChange(next)
   }
 
   return (
@@ -62,7 +75,7 @@ export function ActionButtons({ flags, onChange, emergencyStop }: ActionButtonsP
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         {ACTIONS.map(({ key, label, Icon }) => {
           const active = flags[key]
           return (
@@ -70,7 +83,7 @@ export function ActionButtons({ flags, onChange, emergencyStop }: ActionButtonsP
               key={key}
               type="button"
               onClick={() => toggle(key)}
-              className={`flex flex-col items-center gap-1.5 rounded-lg px-4 py-2.5 transition-all ${
+              className={`flex flex-col items-center gap-1.5 rounded-lg px-3 py-2 transition-all ${
                 active
                   ? 'bg-accent-cyan/15 text-accent-cyan ring-1 ring-accent-cyan/40'
                   : 'bg-white/5 text-white/50 ring-1 ring-white/10 hover:bg-white/10 hover:text-white/70'

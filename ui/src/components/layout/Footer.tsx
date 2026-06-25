@@ -21,7 +21,11 @@ export function Footer({
 }: FooterProps) {
   return (
     <footer className="grid h-36 shrink-0 grid-cols-[1fr_1.2fr_1fr] gap-3 border-t border-white/10 bg-bg-panel p-3">
-      <GamepadStatus control={control} gamepadConnected={gamepadConnected} />
+      <GamepadStatus
+        control={control}
+        gamepadConnected={gamepadConnected}
+        cameraTiltMode={uiFlags.cameraTilt}
+      />
       <ActionButtons flags={uiFlags} onChange={onUiFlagsChange} emergencyStop={control.emergencyStop} />
       <TelemetryLog telemetry={telemetry} connected={telemetry.timestamp > 0} />
     </footer>

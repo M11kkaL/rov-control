@@ -27,6 +27,9 @@ All commands are JSON objects sent over the WebSocket at `/ws`.
   "pitch": 0.0,
   "vertical": 0.0,
   "lateral": 0.0,
+  "flightMode": "manual",
+  "lights": false,
+  "cameraTilt": 0.0,
   "emergencyStop": false
 }
 ```
@@ -38,6 +41,9 @@ All commands are JSON objects sent over the WebSocket at `/ws`.
 | `pitch`         | number  | -1 … 1  | Tilt nose up / down            |
 | `vertical`      | number  | -1 … 1  | Ascend / descend               |
 | `lateral`       | number  | -1 … 1  | Strafe left / right            |
+| `flightMode`    | string  |         | `manual`, `stabilized`, `hold_depth` |
+| `lights`        | boolean |         | ROV lights on/off              |
+| `cameraTilt`    | number  | -1 … 1  | Camera gimbal tilt input       |
 | `emergencyStop` | boolean |         | Optional. Stops all thrusters  |
 
 ## Input mapping (UI)
@@ -48,5 +54,15 @@ All commands are JSON objects sent over the WebSocket at `/ws`.
 | Yaw       | A / D         | Left stick X      |
 | Pitch     | ↑ / ↓         | LB / RB (buttons 4/5) |
 | Vertical  | Q / E         | Right stick Y     |
-| Lateral   | R / F         | Right stick X     |
+| Lateral   | ← / →         | Right stick X     |
 | E-stop    | Space (hold)  | —                 |
+
+## Flight modes
+
+| Mode | Description |
+|------|-------------|
+| `manual` | Direct axis control (default) |
+| `stabilized` | Auto-level pitch and roll; operator trim still available |
+| `hold_depth` | Maintains depth at activation setpoint |
+
+When **Cam Tilt** is active in the UI, arrow keys send `cameraTilt` instead of `pitch`.

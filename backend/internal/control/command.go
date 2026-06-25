@@ -2,25 +2,46 @@ package control
 
 import "math"
 
+const (
+	FlightManual      = "manual"
+	FlightStabilized  = "stabilized"
+	FlightHoldDepth   = "hold_depth"
+)
+
 type Command struct {
 	Throttle      float64 `json:"throttle"`
 	Yaw           float64 `json:"yaw"`
 	Pitch         float64 `json:"pitch"`
 	Vertical      float64 `json:"vertical"`
 	Lateral       float64 `json:"lateral"`
+	FlightMode    string  `json:"flightMode,omitempty"`
+	Lights        bool    `json:"lights,omitempty"`
+	CameraTilt    float64 `json:"cameraTilt,omitempty"`
 	EmergencyStop bool    `json:"emergencyStop,omitempty"`
 }
 
 func (c Command) Clamped() Command {
 	if c.EmergencyStop {
-		return Command{}
+		return Command{EmergencyStop: true, FlightMode: normalizeFlightMode(c.FlightMode)}
 	}
 	return Command{
-		Throttle: clamp(c.Throttle),
-		Yaw:      clamp(c.Yaw),
-		Pitch:    clamp(c.Pitch),
-		Vertical: clamp(c.Vertical),
-		Lateral:  clamp(c.Lateral),
+		Throttle:   clamp(c.Throttle),
+		Yaw:        clamp(c.Yaw),
+		Pitch:      clamp(c.Pitch),
+		Vertical:   clamp(c.Vertical),
+		Lateral:    clamp(c.Lateral),
+		FlightMode: normalizeFlightMode(c.FlightMode),
+		Lights:     c.Lights,
+		CameraTilt: clamp(c.CameraTilt),
+	}
+}
+
+func normalizeFlightMode(mode string) string {
+	switch mode {
+	case FlightStabilized, FlightHoldDepth:
+		return mode
+	default:
+		return FlightManual
 	}
 }
 
