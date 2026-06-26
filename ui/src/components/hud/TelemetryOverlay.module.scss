@@ -101,6 +101,7 @@
   text-transform: uppercase;
   cursor: pointer;
   transition: all 150ms;
+  font-family: inherit;
 
   &:hover {
     color: $hud-neon;
@@ -125,6 +126,19 @@
   font-family: $hud-mono;
   font-size: 10px;
   color: $hud-text;
+  cursor: pointer;
+  transition: all 150ms;
+
+  &:hover {
+    border-color: rgba(255, 77, 109, 0.35);
+    color: $hud-danger;
+  }
+}
+
+.recActive {
+  border-color: rgba(255, 77, 109, 0.45);
+  background: rgba(40, 12, 20, 0.75);
+  color: $hud-danger;
 }
 
 .recDot {
@@ -133,6 +147,56 @@
   border-radius: 50%;
   background: $hud-danger;
   box-shadow: 0 0 8px rgba(255, 77, 109, 0.6);
+}
+
+.recDotPulse {
+  animation: recPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes recPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  animation: photoFlash 220ms ease-out forwards;
+  z-index: 8;
+}
+
+@keyframes photoFlash {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.toast {
+  position: absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid $hud-border-strong;
+  background: rgba(10, 18, 28, 0.92);
+  color: $hud-neon;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 9;
+  pointer-events: none;
 }
 
 .readouts {

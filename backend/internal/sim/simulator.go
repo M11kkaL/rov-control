@@ -18,7 +18,9 @@ const (
 	camTiltRate     = 25.0
 	maxCamTilt      = 35.0
 	moveRate        = 1.5
-	batteryDrain    = 0.01
+	batteryDrainPerSec = 0.018
+	batteryMotorFactor = 0.022
+	batteryLightsFactor = 0.012
 	stabilizeRate   = 50.0
 	holdDepthGain   = 1.8
 	rollResponse    = 4.0
@@ -110,7 +112,7 @@ func (s *Simulator) Tick(cmd control.Command, dt float64) telemetry.Snapshot {
 		s.velocity = math.Sqrt(dx*dx+dz*dz+dy*dy) / dt
 	}
 
-	s.battery = math.Max(0, s.battery-batteryDrain)
+	s.battery = math.Max(0, s.battery-s.computeBatteryDrain(applied, dt))
 
 	s.last = s.snapshot(applied, thrusters, s.pondWarnings())
 	return s.last
@@ -119,9 +121,15 @@ func (s *Simulator) Tick(cmd control.Command, dt float64) telemetry.Snapshot {
 func (s *Simulator) applyFlightMode(cmd control.Command, _ float64) control.Command {
 	if cmd.FlightMode != s.prevFlightMode {
 		if cmd.FlightMode == control.FlightHoldDepth {
-			s.holdDepthTarget = s.depth
+			if cmd.HoldDepthTarget > 0 {
+				s.holdDepthTarget = cmd.HoldDepthTarget
+			} else {
+				s.holdDepthTarget = s.depth
+			}
 		}
 		s.prevFlightMode = cmd.FlightMode
+	} else if cmd.FlightMode == control.FlightHoldDepth && cmd.HoldDepthTarget > 0 {
+		s.holdDepthTarget = cmd.HoldDepthTarget
 	}
 
 	if cmd.FlightMode == control.FlightHoldDepth {
@@ -187,6 +195,17 @@ func stabilizeAngle(angle, rate, dt float64) float64 {
 
 func clamp(v float64) float64 {
 	return math.Max(-1, math.Min(1, v))
+}
+
+func (s *Simulator) computeBatteryDrain(cmd control.Command, dt float64) float64 {
+	load := math.Abs(cmd.Throttle) +
+		math.Abs(cmd.Yaw)*0.6 +
+		math.Abs(cmd.Pitch)*0.3 +
+		math.Abs(cmd.Vertical)*0.5 +
+		math.Abs(cmd.Lateral)*0.5
+	lights := cmd.LightsLevel / 100.0 * batteryLightsFactor
+	motors := load * batteryMotorFactor
+	return (batteryDrainPerSec + lights + motors) * dt
 }
 
 func (s *Simulator) LastSnapshot() telemetry.Snapshot {

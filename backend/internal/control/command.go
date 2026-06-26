@@ -19,6 +19,7 @@ type Command struct {
 	LightsLevel   float64 `json:"lightsLevel,omitempty"`
 	CameraTilt    float64 `json:"cameraTilt,omitempty"`
 	EmergencyStop bool    `json:"emergencyStop,omitempty"`
+	HoldDepthTarget float64 `json:"holdDepthTarget,omitempty"`
 }
 
 func (c Command) Clamped() Command {
@@ -32,15 +33,16 @@ func (c Command) Clamped() Command {
 	lights := level > 0
 
 	return Command{
-		Throttle:    clamp(c.Throttle),
-		Yaw:         clamp(c.Yaw),
-		Pitch:       clamp(c.Pitch),
-		Vertical:    clamp(c.Vertical),
-		Lateral:     clamp(c.Lateral),
-		FlightMode:  normalizeFlightMode(c.FlightMode),
-		Lights:      lights,
-		LightsLevel: level,
-		CameraTilt:  clamp(c.CameraTilt),
+		Throttle:        clamp(c.Throttle),
+		Yaw:             clamp(c.Yaw),
+		Pitch:           clamp(c.Pitch),
+		Vertical:        clamp(c.Vertical),
+		Lateral:         clamp(c.Lateral),
+		FlightMode:      normalizeFlightMode(c.FlightMode),
+		Lights:          lights,
+		LightsLevel:     level,
+		CameraTilt:      clamp(c.CameraTilt),
+		HoldDepthTarget: math.Max(0, c.HoldDepthTarget),
 	}
 }
 

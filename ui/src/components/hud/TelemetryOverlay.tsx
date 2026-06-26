@@ -8,7 +8,14 @@ type TelemetryOverlayProps = {
   heading: number
   connected: boolean
   lightsLevel: number
+  recording: boolean
+  recordElapsed: string
+  recordFrames: number
+  photoFlash: boolean
+  captureToast: string | null
   onLightsToggle: () => void
+  onToggleRecording: () => void
+  onCapturePhoto: () => void
 }
 
 export function TelemetryOverlay({
@@ -18,12 +25,22 @@ export function TelemetryOverlay({
   heading,
   connected,
   lightsLevel,
+  recording,
+  recordElapsed,
+  recordFrames,
+  photoFlash,
+  captureToast,
   onLightsToggle,
+  onToggleRecording,
+  onCapturePhoto,
 }: TelemetryOverlayProps) {
   const lightsOn = lightsLevel > 0
 
   return (
     <div className={styles.overlay}>
+      {photoFlash && <div className={styles.flash} />}
+      {captureToast && <div className={styles.toast}>{captureToast}</div>}
+
       <div className={styles.tint} />
       <div className={styles.vignette} />
       <div className={styles.crosshairH} />
@@ -31,8 +48,10 @@ export function TelemetryOverlay({
       <div className={styles.horizon} style={{ transform: `rotate(${roll}deg)` }} />
 
       <div className={styles.topLeft}>
-        <span className={`${styles.chip} ${styles.chipActive}`}>Video</span>
-        <span className={styles.chip}>Photo</span>
+        <span className={`${styles.chip} ${!recording ? styles.chipActive : ''}`}>Video</span>
+        <button type="button" className={styles.chip} onClick={onCapturePhoto}>
+          Photo
+        </button>
       </div>
 
       <div className={styles.topRight}>
@@ -71,10 +90,16 @@ export function TelemetryOverlay({
       </div>
 
       <div className={styles.bottomRight}>
-        <div className={styles.rec}>
-          <span className={styles.recDot} />
-          REC
-        </div>
+        <button
+          type="button"
+          className={`${styles.rec} ${recording ? styles.recActive : ''}`}
+          onClick={onToggleRecording}
+          title={recording ? 'Stop recording and download telemetry' : 'Start telemetry recording'}
+        >
+          <span className={`${styles.recDot} ${recording ? styles.recDotPulse : ''}`} />
+          {recording ? recordElapsed : 'REC'}
+          {recording && <span>({recordFrames})</span>}
+        </button>
         <span className={styles.chip}>Depth {depth.toFixed(0)}m</span>
       </div>
 

@@ -159,3 +159,45 @@ func TestLightsLevelDimsInSnapshot(t *testing.T) {
 		t.Fatalf("lightsLevel=%.0f, want 40", snap.LightsLevel)
 	}
 }
+
+func TestBatteryDrainIdleRate(t *testing.T) {
+	s := New(true)
+	const dt = 0.02
+	const seconds = 100.0
+	ticks := int(seconds / dt)
+
+	for i := 0; i < ticks; i++ {
+		s.Tick(control.Command{}, dt)
+	}
+
+	want := 100 - batteryDrainPerSec*seconds
+	if math.Abs(s.battery-want) > 0.02 {
+		t.Fatalf("battery=%.3f want %.3f after %.0fs idle", s.battery, want, seconds)
+	}
+}
+
+func TestBatteryDrainFasterUnderLoad(t *testing.T) {
+	idle := New(true)
+	loaded := New(true)
+	const dt = 0.05
+
+	for i := 0; i < 400; i++ {
+		idle.Tick(control.Command{}, dt)
+		loaded.Tick(control.Command{Throttle: 1, LightsLevel: 100}, dt)
+	}
+
+	if loaded.battery >= idle.battery {
+		t.Fatalf("loaded should drain faster: idle=%.2f loaded=%.2f", idle.battery, loaded.battery)
+	}
+}
+
+func TestHoldDepthTargetFromCommand(t *testing.T) {
+	s := New(true)
+	s.depth = 4
+
+	s.Tick(control.Command{FlightMode: control.FlightHoldDepth, HoldDepthTarget: 10}, 0.05)
+
+	if math.Abs(s.holdDepthTarget-10) > 0.01 {
+		t.Fatalf("holdDepthTarget=%.2f want 10", s.holdDepthTarget)
+	}
+}

@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { forwardRef, useRef } from 'react'
 import { useSimulator } from '../hooks/useSimulator'
 import { BackendCommandBridge } from '../sim'
 
@@ -6,12 +6,24 @@ type VideoFeedProps = {
   bridge: BackendCommandBridge
 }
 
-export function VideoFeed({ bridge }: VideoFeedProps) {
+export const VideoFeed = forwardRef<HTMLDivElement, VideoFeedProps>(function VideoFeed(
+  { bridge },
+  ref,
+) {
   const containerRef = useRef<HTMLDivElement>(null)
   useSimulator(containerRef, bridge)
 
-  return <div ref={containerRef} className="video-feed" />
-}
+  const setRef = (node: HTMLDivElement | null) => {
+    containerRef.current = node
+    if (typeof ref === 'function') {
+      ref(node)
+    } else if (ref) {
+      ref.current = node
+    }
+  }
+
+  return <div ref={setRef} className="video-feed" />
+})
 
 export function useSimBridge(): BackendCommandBridge {
   const bridgeRef = useRef<BackendCommandBridge | null>(null)

@@ -4,13 +4,29 @@ const POND_RADIUS = 38
 const DEPTH_MAX = 30
 const SCALE_MARKS = [0, 10, 20, 30]
 
+type Waypoint = { x: number; z: number }
+
 type NavigationPanelProps = {
   x: number
   z: number
   depth: number
+  waypoint: Waypoint | null
+  onSetWaypoint: (wp: Waypoint) => void
+  onClearWaypoint: () => void
 }
 
-export function NavigationPanel({ x, z, depth }: NavigationPanelProps) {
+function distance2d(ax: number, az: number, bx: number, bz: number): number {
+  return Math.hypot(bx - ax, bz - az)
+}
+
+export function NavigationPanel({
+  x,
+  z,
+  depth,
+  waypoint,
+  onSetWaypoint,
+  onClearWaypoint,
+}: NavigationPanelProps) {
   const size = 156
   const center = size / 2
   const scale = (center - 14) / POND_RADIUS
@@ -19,12 +35,44 @@ export function NavigationPanel({ x, z, depth }: NavigationPanelProps) {
   const depthPct = Math.min(depth / DEPTH_MAX, 1)
   const subTop = `${(1 - depthPct) * 82 + 8}%`
 
+  const handleMapClick = (event: React.MouseEvent<SVGSVGElement>) => {
+    const svg = event.currentTarget
+    const ctm = svg.getScreenCTM()
+    if (!ctm) return
+    const pt = svg.createSVGPoint()
+    pt.x = event.clientX
+    pt.y = event.clientY
+    const local = pt.matrixTransform(ctm.inverse())
+    const worldX = (local.x - center) / scale
+    const worldZ = (local.y - center) / scale
+    const r = Math.hypot(worldX, worldZ)
+    if (r > POND_RADIUS) return
+    onSetWaypoint({ x: worldX, z: worldZ })
+  }
+
+  const wpDist = waypoint ? distance2d(x, z, waypoint.x, waypoint.z) : null
+
   return (
     <div className={styles.column}>
       <section className={styles.card}>
-        <h2 className={styles.title}>Drone Location</h2>
+        <div className={styles.mapHeader}>
+          <h2 className={styles.title}>Drone Location</h2>
+          {waypoint && (
+            <button type="button" className={styles.clearWp} onClick={onClearWaypoint}>
+              Clear WP
+            </button>
+          )}
+        </div>
         <div className={styles.mapWrap}>
-          <svg viewBox={`0 0 ${size} ${size}`} width="100%" height={size}>
+          <svg
+            viewBox={`0 0 ${size} ${size}`}
+            width="100%"
+            height={size}
+            className={styles.mapSvg}
+            onClick={handleMapClick}
+            role="img"
+            aria-label="Mission map — click to set waypoint"
+          >
             <circle
               cx={center}
               cy={center}
@@ -33,6 +81,20 @@ export function NavigationPanel({ x, z, depth }: NavigationPanelProps) {
               stroke="rgba(44,232,212,0.18)"
               strokeWidth="1"
             />
+            {waypoint && (
+              <>
+                <path
+                  d={`M ${dotX} ${dotY} L ${center + waypoint.x * scale} ${center + waypoint.z * scale}`}
+                  stroke="rgba(255,107,74,0.5)"
+                  strokeWidth="1"
+                  strokeDasharray="3 3"
+                  fill="none"
+                />
+                <g transform={`translate(${center + waypoint.x * scale}, ${center + waypoint.z * scale})`}>
+                  <rect x={-5} y={-5} width={10} height={10} fill="none" stroke="#ff6b4a" strokeWidth="1.25" transform="rotate(45)" />
+                </g>
+              </>
+            )}
             <path
               d={`M ${center} ${center - 20} L ${dotX} ${dotY}`}
               stroke="rgba(44,232,212,0.35)"
@@ -46,7 +108,9 @@ export function NavigationPanel({ x, z, depth }: NavigationPanelProps) {
           </svg>
           <span className={styles.coords}>
             {x.toFixed(1)}m E, {z.toFixed(1)}m N
+            {wpDist !== null && ` · WP ${wpDist.toFixed(1)}m`}
           </span>
+          <span className={styles.mapHint}>Click map to set waypoint</span>
         </div>
       </section>
 

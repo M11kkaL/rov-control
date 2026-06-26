@@ -10,6 +10,7 @@ export type ControlCommand = {
   lights?: boolean
   lightsLevel?: number
   cameraTilt?: number
+  holdDepthTarget?: number
   emergencyStop?: boolean
 }
 

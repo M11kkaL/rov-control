@@ -20,6 +20,46 @@
   margin-bottom: 0.6rem;
 }
 
+.mapHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+
+  .title {
+    margin-bottom: 0;
+  }
+}
+
+.clearWp {
+  border: 1px solid rgba(255, 107, 74, 0.35);
+  background: rgba(255, 107, 74, 0.08);
+  color: #ff8a70;
+  font-family: $hud-font;
+  font-size: 8px;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 107, 74, 0.15);
+  }
+}
+
+.mapSvg {
+  cursor: crosshair;
+  display: block;
+}
+
+.mapHint {
+  display: block;
+  padding: 0.35rem 8px 6px;
+  font-size: 8px;
+  color: $hud-text-dim;
+  letter-spacing: 0.03em;
+}
+
 .mapWrap {
   position: relative;
   border-radius: $hud-radius-sm;

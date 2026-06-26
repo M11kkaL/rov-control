@@ -29,22 +29,26 @@ All commands are JSON objects sent over the WebSocket at `/ws`.
   "lateral": 0.0,
   "flightMode": "manual",
   "lights": false,
+  "lightsLevel": 80,
   "cameraTilt": 0.0,
+  "holdDepthTarget": 12.5,
   "emergencyStop": false
 }
 ```
 
-| Field           | Type    | Range   | Description                    |
-|-----------------|---------|---------|--------------------------------|
-| `throttle`      | number  | -1 … 1  | Forward / backward             |
-| `yaw`           | number  | -1 … 1  | Rotate left / right            |
-| `pitch`         | number  | -1 … 1  | Tilt nose up / down            |
-| `vertical`      | number  | -1 … 1  | Ascend / descend               |
-| `lateral`       | number  | -1 … 1  | Strafe left / right            |
-| `flightMode`    | string  |         | `manual`, `stabilized`, `hold_depth` |
-| `lights`        | boolean |         | ROV lights on/off              |
-| `cameraTilt`    | number  | -1 … 1  | Camera gimbal tilt input       |
-| `emergencyStop` | boolean |         | Optional. Stops all thrusters  |
+| Field             | Type    | Range   | Description                    |
+|-------------------|---------|---------|--------------------------------|
+| `throttle`        | number  | -1 … 1  | Forward / backward             |
+| `yaw`             | number  | -1 … 1  | Rotate left / right            |
+| `pitch`           | number  | -1 … 1  | Tilt nose up / down            |
+| `vertical`        | number  | -1 … 1  | Ascend / descend               |
+| `lateral`         | number  | -1 … 1  | Strafe left / right            |
+| `flightMode`      | string  |         | `manual`, `stabilized`, `hold_depth` |
+| `lights`          | boolean |         | ROV lights on/off (derived from `lightsLevel`) |
+| `lightsLevel`     | number  | 0 … 100 | Headlight brightness percent   |
+| `cameraTilt`      | number  | -1 … 1  | Camera gimbal tilt input       |
+| `holdDepthTarget` | number  | metres  | Optional. Depth setpoint when `flightMode` is `hold_depth` |
+| `emergencyStop`   | boolean |         | Optional. Stops all thrusters  |
 
 ## Input mapping (UI)
 

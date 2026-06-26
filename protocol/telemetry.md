@@ -22,6 +22,7 @@ Telemetry is broadcast from the backend to all connected UI clients at 20 Hz.
   "cameraTilt": 10.0,
   "flightMode": "hold_depth",
   "lights": true,
+  "lightsLevel": 80,
   "holdDepthTarget": 12.5,
   "battery": 87.0,
   "x": 1.2,
@@ -34,7 +35,9 @@ Telemetry is broadcast from the backend to all connected UI clients at 20 Hz.
     "vertical": 0.0,
     "lateral": 0.0,
     "flightMode": "hold_depth",
-    "lights": true
+    "lights": true,
+    "lightsLevel": 80,
+    "holdDepthTarget": 12.5
   },
   "thrusters": {
     "front": 0.5,
@@ -56,7 +59,8 @@ Telemetry is broadcast from the backend to all connected UI clients at 20 Hz.
 | `roll`               | number   | degrees      | Roll angle -30 … 30            |
 | `cameraTilt`         | number   | degrees      | Camera gimbal angle            |
 | `flightMode`         | string   |              | Active flight mode echo        |
-| `lights`             | boolean  |              | ROV lights state               |
+| `lights`             | boolean  |              | ROV lights state (on when `lightsLevel` > 0) |
+| `lightsLevel`        | number   | 0 … 100      | Headlight brightness percent   |
 | `holdDepthTarget`    | number   | metres       | Setpoint when in `hold_depth`  |
 | `battery`            | number   | percent      | Remaining charge 0–100         |
 | `x`                  | number   | metres       | World X position               |
@@ -73,7 +77,7 @@ Telemetry is broadcast from the backend to all connected UI clients at 20 Hz.
 
 ## WebGL simulator usage
 
-The browser simulator syncs `depth`, `heading`, `pitch`, `roll`, `cameraTilt`, `lights`, `x`, `z`, and `velocity` from the backend. It toggles the nose headlight from `lights` and applies gimbal tilt on the camera.
+The browser simulator syncs `depth`, `heading`, `pitch`, `roll`, `cameraTilt`, `lights`, `lightsLevel`, `x`, `z`, and `velocity` from the backend. It toggles the nose headlight from `lightsLevel` (intensity scales with percent) and applies gimbal tilt on the camera.
 
 ## Broadcast rate
 

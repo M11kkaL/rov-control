@@ -30,8 +30,9 @@ export function temperatureC(depth: number): number {
 }
 
 export function batteryEstimateMinutes(battery: number, velocity: number): number {
-  const drain = 0.4 + velocity * 0.25
-  return Math.max(0, (battery / 100) * 180 / drain)
+  const fullRuntimeMin = 92
+  const loadFactor = 1 + velocity * 0.35
+  return Math.max(0, (battery / 100) * fullRuntimeMin / loadFactor)
 }
 
 export function hasLeakAlert(warnings: string[]): boolean {
