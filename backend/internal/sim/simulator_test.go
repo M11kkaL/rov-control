@@ -7,6 +7,68 @@ import (
 	"rov-system/backend/internal/control"
 )
 
+func TestHoldDepthManualVerticalOverride(t *testing.T) {
+	s := New(true)
+	s.depth = 6
+	s.prevFlightMode = control.FlightHoldDepth
+	s.holdDepthTarget = 6
+
+	for i := 0; i < 40; i++ {
+		s.Tick(control.Command{FlightMode: control.FlightHoldDepth, HoldDepthTarget: 6, Vertical: 1}, 0.05)
+	}
+
+	if s.depth >= 5.9 {
+		t.Fatalf("depth=%.2f, expected Q override to ascend from hold", s.depth)
+	}
+}
+
+func TestForwardThrottleDoesNotChangeDepth(t *testing.T) {
+	s := New(true)
+	s.depth = 5
+	for i := 0; i < 120; i++ {
+		s.Tick(control.Command{Throttle: 1}, 0.05)
+	}
+	if math.Abs(s.depth-5) > 0.05 {
+		t.Fatalf("depth=%.2f, forward throttle alone should not change depth", s.depth)
+	}
+}
+
+func TestHoldDepthMovesTowardTarget(t *testing.T) {
+	s := New(true)
+	s.depth = 3
+	s.prevFlightMode = control.FlightHoldDepth
+	s.holdDepthTarget = 8
+
+	for i := 0; i < 300; i++ {
+		s.Tick(control.Command{FlightMode: control.FlightHoldDepth, HoldDepthTarget: 8}, 0.05)
+	}
+
+	if s.depth <= 3.1 {
+		t.Fatalf("depth=%.2f, expected to descend toward target 8", s.depth)
+	}
+	if math.Abs(s.depth-8) > 0.35 {
+		t.Fatalf("depth=%.2f target=%.2f, hold depth did not reach setpoint", s.depth, s.holdDepthTarget)
+	}
+}
+
+func TestHoldDepthAscendsTowardTarget(t *testing.T) {
+	s := New(true)
+	s.depth = 9
+	s.prevFlightMode = control.FlightHoldDepth
+	s.holdDepthTarget = 4
+
+	for i := 0; i < 300; i++ {
+		s.Tick(control.Command{FlightMode: control.FlightHoldDepth, HoldDepthTarget: 4}, 0.05)
+	}
+
+	if s.depth >= 8.9 {
+		t.Fatalf("depth=%.2f, expected to ascend toward target 4", s.depth)
+	}
+	if math.Abs(s.depth-4) > 0.35 {
+		t.Fatalf("depth=%.2f target=%.2f, hold depth did not reach setpoint", s.depth, s.holdDepthTarget)
+	}
+}
+
 func TestHoldDepthMaintainsTarget(t *testing.T) {
 	s := New(true)
 	s.depth = 6
@@ -14,7 +76,7 @@ func TestHoldDepthMaintainsTarget(t *testing.T) {
 	s.holdDepthTarget = 6
 
 	for i := 0; i < 200; i++ {
-		s.Tick(control.Command{FlightMode: control.FlightHoldDepth, Vertical: 1}, 0.05)
+		s.Tick(control.Command{FlightMode: control.FlightHoldDepth}, 0.05)
 	}
 
 	if math.Abs(s.depth-s.holdDepthTarget) > 0.25 {

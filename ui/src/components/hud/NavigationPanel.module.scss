@@ -1,23 +1,17 @@
 @use '../../styles/hud-tokens' as *;
 
-.column {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  width: 196px;
-  min-height: 0;
-}
-
 .card {
   @include hud-panel;
-  padding: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  width: 196px;
   font-family: $hud-font;
+  flex-shrink: 0;
 }
 
 .title {
   @include hud-label;
   font-size: 9px;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0;
 }
 
 .mapHeader {
@@ -25,11 +19,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.35rem;
-  margin-bottom: 0.6rem;
-
-  .title {
-    margin-bottom: 0;
-  }
+  margin-bottom: 0.55rem;
 }
 
 .clearWp {
@@ -54,7 +44,7 @@
 
 .mapHint {
   display: block;
-  padding: 0.35rem 8px 6px;
+  padding: 0.3rem 8px 5px;
   font-size: 8px;
   color: $hud-text-dim;
   letter-spacing: 0.03em;
@@ -64,93 +54,33 @@
   position: relative;
   border-radius: $hud-radius-sm;
   overflow: hidden;
-  background:
-    linear-gradient(rgba(44, 232, 212, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(44, 232, 212, 0.04) 1px, transparent 1px),
-    rgba(0, 0, 0, 0.25);
-  background-size: 16px 16px;
+  background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(44, 232, 212, 0.08);
 }
 
+.pondRing {
+  fill: rgba(44, 232, 212, 0.04);
+  stroke: rgba(44, 232, 212, 0.2);
+  stroke-width: 1;
+}
+
+.rangeRing {
+  fill: none;
+  stroke: rgba(44, 232, 212, 0.1);
+  stroke-width: 0.75;
+}
+
+.axis {
+  stroke: rgba(44, 232, 212, 0.12);
+  stroke-width: 0.75;
+}
+
 .coords {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
+  display: block;
+  padding: 0.35rem 8px 0;
   font-family: $hud-mono;
-  font-size: 9px;
+  font-size: 8px;
   color: $hud-text-muted;
-  letter-spacing: 0.04em;
-}
-
-.depthCard {
-  flex: 1;
-  min-height: 180px;
-  display: flex;
-  flex-direction: column;
-}
-
-.depthBody {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 36px 1fr auto;
-  gap: 0.5rem;
-  align-items: stretch;
-}
-
-.scale {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  font-family: $hud-mono;
-  font-size: 8px;
-  color: $hud-text-dim;
-  padding: 4px 0;
-}
-
-.track {
-  position: relative;
-  border-left: 1px dashed rgba(44, 232, 212, 0.2);
-  border-right: 1px dashed rgba(44, 232, 212, 0.2);
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-}
-
-.subIcon {
-  position: absolute;
-  left: 50%;
-  width: 28px;
-  transform: translateX(-50%);
-  transition: top 200ms ease;
-  opacity: 0.85;
-}
-
-.depthLine {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: $hud-neon;
-  box-shadow: 0 0 8px $hud-neon-glow;
-  transition: top 200ms ease;
-}
-
-.depthReadout {
-  align-self: flex-end;
-  padding: 0.45rem 0.55rem;
-  border-radius: $hud-radius-sm;
-  border: 1px solid $hud-border;
-  background: rgba(20, 27, 38, 0.9);
-}
-
-.depthLabel {
-  @include hud-label;
-  font-size: 8px;
-}
-
-.depthValue {
-  font-family: $hud-mono;
-  font-size: 14px;
-  font-weight: 600;
-  color: $hud-neon;
-  margin-top: 0.15rem;
+  letter-spacing: 0.03em;
+  line-height: 1.35;
 }

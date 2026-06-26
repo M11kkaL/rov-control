@@ -10,7 +10,6 @@ const CRUISE_MAX_MPS = 1.5
 
 export type CommandAssist = {
   cruiseSpeed: number
-  holdDepthTarget: number
 }
 
 export function useCommandSender(
@@ -18,16 +17,20 @@ export function useCommandSender(
   control: ControlState,
   uiFlags: UiControlFlags,
   assist: CommandAssist,
+  enabled = true,
 ) {
   const controlRef = useRef(control)
   const uiFlagsRef = useRef(uiFlags)
   const assistRef = useRef(assist)
+  const enabledRef = useRef(enabled)
   controlRef.current = control
   uiFlagsRef.current = uiFlags
   assistRef.current = assist
+  enabledRef.current = enabled
 
   useEffect(() => {
     const send = () => {
+      if (!enabledRef.current) return
       const c = controlRef.current
       const flags = uiFlagsRef.current
       const assistState = assistRef.current
@@ -41,9 +44,6 @@ export function useCommandSender(
         throttle = Math.min(1, assistState.cruiseSpeed / CRUISE_MAX_MPS)
       }
 
-      const holdDepthTarget =
-        flightMode === 'hold_depth' && assistState.holdDepthTarget > 0 ? assistState.holdDepthTarget : undefined
-
       const message: CommandMessage = {
         type: 'command',
         payload: {
@@ -56,7 +56,6 @@ export function useCommandSender(
           lights: lightsLevel > 0,
           lightsLevel,
           cameraTilt: useCameraTilt ? cameraTiltValue : 0,
-          holdDepthTarget,
           emergencyStop: c.emergencyStop || undefined,
         },
         timestamp: Date.now(),

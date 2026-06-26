@@ -64,48 +64,6 @@
   transition: stroke-dashoffset 120ms linear;
 }
 
-.arcBgInner {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.05);
-  stroke-width: 3;
-}
-
-.arcDepth {
-  fill: none;
-  stroke: rgba(44, 232, 212, 0.4);
-  stroke-width: 3;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 120ms linear;
-}
-
-.dualValues {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  width: 100%;
-}
-
-.dualRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.5rem;
-}
-
-.dualLabel {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: $hud-text-dim;
-}
-
-.dualValue {
-  font-family: $hud-mono;
-  font-size: 11px;
-  font-weight: 600;
-  color: $hud-neon;
-}
-
 .tick {
   stroke: rgba(44, 232, 212, 0.28);
   stroke-width: 1;

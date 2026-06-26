@@ -35,7 +35,7 @@ export function KeyboardHelp({ open, onClose }: KeyboardHelpProps) {
             </li>
           ))}
         </ul>
-        <p className={styles.hint}>Bottom sliders set cruise speed and hold-depth target.</p>
+        <p className={styles.hint}>Cruise speed slider sets forward thrust when W/S is idle. HOLD locks depth; Q/E override.</p>
       </div>
     </div>
   )

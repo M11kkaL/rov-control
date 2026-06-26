@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { VideoFeed, useSimBridge } from './components'
 import { StatusBar } from './components/hud/StatusBar'
-import { RadarPanel } from './components/hud/RadarPanel'
 import { NavigationPanel } from './components/hud/NavigationPanel'
 import { TelemetryOverlay } from './components/hud/TelemetryOverlay'
 import { ThrusterPanel } from './components/hud/ThrusterPanel'
@@ -18,8 +17,33 @@ import { useKeyboardHelp } from './hooks/useKeyboardHelp'
 import { useRecordingTimer } from './hooks/useRecordingTimer'
 import { useTelemetryRecorder } from './hooks/useTelemetryRecorder'
 import { useVideoRecorder } from './hooks/useVideoRecorder'
+import type { Telemetry } from './types'
 import { captureViewportPhoto } from './utils/cameraCapture'
+import {
+  messageForSaveResult,
+  saveRecordingBundle,
+  saveTelemetryFrames,
+  saveVideoBlob,
+  shouldClearAfterSave,
+} from './utils/recordingExport'
 import styles from './App.module.scss'
+
+type PendingExport = {
+  frames: Telemetry[]
+  video: Blob | null
+}
+
+function applyExportRemoval(
+  prev: PendingExport | null,
+  remove: { telemetry?: boolean; video?: boolean },
+): PendingExport | null {
+  if (!prev) return null
+  const next: PendingExport = {
+    frames: remove.telemetry ? [] : prev.frames,
+    video: remove.video ? null : prev.video,
+  }
+  return next.frames.length > 0 || next.video ? next : null
+}
 
 function App() {
   const bridge = useSimBridge()
@@ -30,6 +54,7 @@ function App() {
   const mode = getOperationMode()
   const { open: helpOpen, setOpen: setHelpOpen } = useKeyboardHelp()
   const videoRecorder = useVideoRecorder()
+  const toastTimerRef = useRef(0)
 
   const [uiFlags, setUiFlags] = useState<UiControlFlags>({
     lights: false,
@@ -39,15 +64,27 @@ function App() {
     cameraTilt: false,
     manualCameraTilt: 0,
   })
-  const [assist, setAssist] = useState({ cruiseSpeed: 0, holdDepthTarget: 2 })
+  const [assist, setAssist] = useState({ cruiseSpeed: 0 })
   const [waypoint, setWaypoint] = useState<{ x: number; z: number } | null>(null)
   const [recording, setRecording] = useState(false)
   const [photoFlash, setPhotoFlash] = useState(false)
   const [captureToast, setCaptureToast] = useState<string | null>(null)
-  const depthSynced = useRef(false)
+  const [pendingExport, setPendingExport] = useState<PendingExport | null>(null)
+  const [savingRecording, setSavingRecording] = useState(false)
+  const stopRecordingRef = useRef(false)
 
   const recordElapsed = useRecordingTimer(recording)
-  const { frameCount, download } = useTelemetryRecorder(telemetry, recording)
+  const { frameCount, clearBuffer, snapshotFrames, downloadFrames } = useTelemetryRecorder(telemetry, recording)
+
+  const showToast = (message: string, durationMs = 2200) => {
+    window.clearTimeout(toastTimerRef.current)
+    setCaptureToast(message)
+    toastTimerRef.current = window.setTimeout(() => setCaptureToast(null), durationMs)
+  }
+
+  useEffect(() => {
+    return () => window.clearTimeout(toastTimerRef.current)
+  }, [])
 
   useEffect(() => {
     setUiFlags((prev) => ({
@@ -56,13 +93,16 @@ function App() {
     }))
   }, [telemetry.cameraTilt])
 
-  useEffect(() => {
-    if (depthSynced.current || telemetry.timestamp <= 0) return
-    depthSynced.current = true
-    setAssist((prev) => ({ ...prev, holdDepthTarget: telemetry.depth }))
-  }, [telemetry.depth, telemetry.timestamp])
-
   useCommandSender(service, control, uiFlags, assist)
+
+  const exportPrompt =
+    pendingExport && (pendingExport.frames.length > 0 || pendingExport.video)
+      ? {
+          frameCount: pendingExport.frames.length,
+          hasVideo: pendingExport.video !== null,
+          canSaveAll: pendingExport.frames.length > 0 && pendingExport.video !== null,
+        }
+      : null
 
   const handleLightsLevel = (level: number) => {
     setUiFlags((prev) => ({
@@ -88,52 +128,109 @@ function App() {
   }
 
   const handleToggleRecording = async () => {
+    if (savingRecording) return
     if (recording) {
-      const blob = await videoRecorder.stop()
-      download('jsonl')
-      if (blob) {
-        videoRecorder.download(blob)
-        setCaptureToast('REC saved (video + telemetry)')
-      } else {
-        setCaptureToast('Telemetry saved')
-      }
-      window.setTimeout(() => setCaptureToast(null), 2200)
+      if (stopRecordingRef.current) return
+      stopRecordingRef.current = true
+      setSavingRecording(true)
       setRecording(false)
+
+      const video = await videoRecorder.stop()
+      const frames = snapshotFrames()
+      clearBuffer()
+
+      if (frames.length === 0 && !video) {
+        showToast('Nothing recorded')
+      } else {
+        setPendingExport({ frames, video })
+        showToast('Recording ready — save files below REC')
+      }
+
+      setSavingRecording(false)
+      stopRecordingRef.current = false
       return
     }
+
+    clearBuffer()
+    setPendingExport(null)
     const started = videoRecorder.start(videoRef.current)
     if (!started) {
-      setCaptureToast('Video capture unavailable')
-      window.setTimeout(() => setCaptureToast(null), 1800)
+      showToast('Video capture unavailable', 1800)
+      return
     }
     setRecording(true)
+  }
+
+  const handleSaveTelemetryExport = async () => {
+    if (!pendingExport?.frames.length) return
+    const body = downloadFrames(pendingExport.frames, 'jsonl')
+    if (!body) return
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+    const result = await saveTelemetryFrames(pendingExport.frames, body, stamp)
+    if (!result) return
+
+    showToast(messageForSaveResult(result, 'Telemetry saved'))
+
+    if (shouldClearAfterSave(result)) {
+      setPendingExport((prev) => applyExportRemoval(prev, { telemetry: true }))
+    }
+  }
+
+  const handleSaveVideoExport = async () => {
+    if (!pendingExport?.video) return
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+    const result = await saveVideoBlob(pendingExport.video, stamp)
+    showToast(messageForSaveResult(result, 'Video saved'))
+
+    if (shouldClearAfterSave(result)) {
+      setPendingExport((prev) => applyExportRemoval(prev, { video: true }))
+    }
+  }
+
+  const handleSaveAllExport = async () => {
+    if (!pendingExport) return
+    const body = pendingExport.frames.length > 0 ? downloadFrames(pendingExport.frames, 'jsonl') : null
+    const outcome = await saveRecordingBundle(pendingExport.frames, body, pendingExport.video)
+    showToast(outcome.message)
+
+    if (!outcome.cancelled && outcome.results.length > 0) {
+      setPendingExport((prev) =>
+        applyExportRemoval(prev, {
+          telemetry: outcome.results.includes('telemetry'),
+          video: outcome.results.includes('video'),
+        }),
+      )
+    }
+  }
+
+  const handleDismissExport = () => {
+    setPendingExport(null)
   }
 
   const handleCapturePhoto = () => {
     const ok = captureViewportPhoto(videoRef.current)
     setPhotoFlash(true)
-    setCaptureToast(ok ? 'Photo saved' : 'Capture failed')
+    showToast(ok ? 'Choose save location in dialog' : 'Capture failed', 1800)
     window.setTimeout(() => setPhotoFlash(false), 220)
-    window.setTimeout(() => setCaptureToast(null), 1800)
-  }
-
-  const handleTargetDepthChange = (depth: number) => {
-    setAssist((prev) => ({ ...prev, holdDepthTarget: depth }))
-    setUiFlags((prev) => ({ ...prev, holdDepth: true }))
   }
 
   return (
     <div className={styles.shell}>
-      <StatusBar connected={connected} flightMode={telemetry.flightMode} time={time} mode={mode} />
+      <StatusBar
+        connected={connected}
+        flightMode={telemetry.flightMode}
+        time={time}
+        mode={mode}
+      />
       <KeyboardHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
 
       <div className={styles.body}>
         <div className={styles.leftColumn}>
-          <RadarPanel heading={telemetry.heading} x={telemetry.x} z={telemetry.z} waypoint={waypoint} />
           <NavigationPanel
+            heading={telemetry.heading}
             x={telemetry.x}
             z={telemetry.z}
-            depth={telemetry.depth}
             waypoint={waypoint}
             onSetWaypoint={setWaypoint}
             onClearWaypoint={() => setWaypoint(null)}
@@ -152,35 +249,32 @@ function App() {
         <main className={styles.center}>
           <VideoFeed ref={videoRef} bridge={bridge} />
           <TelemetryOverlay
-            depth={telemetry.depth}
             pitch={telemetry.pitch}
             roll={telemetry.roll}
             heading={telemetry.heading}
             connected={connected}
             lightsLevel={uiFlags.lightsLevel}
             recording={recording}
+            savingRecording={savingRecording}
             recordElapsed={recordElapsed}
             recordFrames={frameCount}
             photoFlash={photoFlash}
             captureToast={captureToast}
+            exportPrompt={exportPrompt}
             onLightsToggle={handleLightsToggle}
             onToggleRecording={handleToggleRecording}
             onCapturePhoto={handleCapturePhoto}
+            onSaveTelemetryExport={handleSaveTelemetryExport}
+            onSaveVideoExport={handleSaveVideoExport}
+            onSaveAllExport={handleSaveAllExport}
+            onDismissExport={handleDismissExport}
           />
-          <BottomGauges
-            heading={telemetry.heading}
-            velocity={telemetry.velocity}
-            depth={telemetry.depth}
-            pitch={telemetry.pitch}
-            roll={telemetry.roll}
-          />
+          <BottomGauges heading={telemetry.heading} pitch={telemetry.pitch} roll={telemetry.roll} />
           <ControlSliders
             velocity={telemetry.velocity}
             depth={telemetry.depth}
             cruiseSpeed={assist.cruiseSpeed}
-            targetDepth={assist.holdDepthTarget}
             onCruiseSpeedChange={(cruiseSpeed) => setAssist((prev) => ({ ...prev, cruiseSpeed }))}
-            onTargetDepthChange={handleTargetDepthChange}
           />
         </main>
 

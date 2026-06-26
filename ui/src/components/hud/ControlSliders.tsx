@@ -7,22 +7,15 @@ type ControlSlidersProps = {
   velocity: number
   depth: number
   cruiseSpeed: number
-  targetDepth: number
   onCruiseSpeedChange: (speed: number) => void
-  onTargetDepthChange: (depth: number) => void
 }
 
-export function ControlSliders({
-  velocity,
-  depth,
-  cruiseSpeed,
-  targetDepth,
-  onCruiseSpeedChange,
-  onTargetDepthChange,
-}: ControlSlidersProps) {
+export function ControlSliders({ velocity, depth, cruiseSpeed, onCruiseSpeedChange }: ControlSlidersProps) {
+  const depthRatio = Math.min(depth / DEPTH_MAX, 1)
+
   return (
     <div className={styles.row}>
-      <label className={styles.sliderBlock}>
+      <label className={styles.block}>
         <span className={styles.label}>
           Cruise speed
           <span className={styles.value}>{cruiseSpeed.toFixed(1)} m/s</span>
@@ -39,22 +32,16 @@ export function ControlSliders({
         <span className={styles.live}>Now {velocity.toFixed(1)} m/s</span>
       </label>
 
-      <label className={styles.sliderBlock}>
+      <div className={styles.block} aria-label={`Depth ${depth.toFixed(1)} metres`}>
         <span className={styles.label}>
-          Hold depth
-          <span className={styles.value}>{targetDepth.toFixed(1)} m</span>
+          Depth
+          <span className={styles.value}>{depth.toFixed(1)} m</span>
         </span>
-        <input
-          type="range"
-          min={0}
-          max={DEPTH_MAX}
-          step={0.5}
-          value={targetDepth}
-          onChange={(e) => onTargetDepthChange(Number(e.target.value))}
-          className={styles.range}
-        />
-        <span className={styles.live}>Now {depth.toFixed(1)} m</span>
-      </label>
+        <div className={styles.depthTrack}>
+          <div className={styles.depthFill} style={{ width: `${depthRatio * 100}%` }} />
+        </div>
+        <span className={styles.live}>0–{DEPTH_MAX} m</span>
+      </div>
     </div>
   )
 }

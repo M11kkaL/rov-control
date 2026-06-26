@@ -50,6 +50,7 @@ function buildEvents(warnings: string[], connected: boolean, depth: number): Log
     events.push({ kind: 'warning', category: 'Warning', message: 'Telemetry link offline' })
   }
 
+  events.push({ kind: 'info', category: 'Info', message: 'Inspection site: 12m E, 8m S (neon valve)' })
   events.push({ kind: 'info', category: 'Info', message: 'Pilot mode active — manual control' })
 
   return events

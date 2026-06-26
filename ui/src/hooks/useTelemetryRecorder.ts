@@ -16,18 +16,16 @@ export function useTelemetryRecorder(telemetry: Telemetry, recording: boolean) {
     setFrameCount(bufferRef.current.length)
   }, [recording, telemetry])
 
-  useEffect(() => {
-    if (!recording) {
-      bufferRef.current = []
-      setFrameCount(0)
-    }
-  }, [recording])
+  const clearBuffer = useCallback(() => {
+    bufferRef.current = []
+    setFrameCount(0)
+  }, [])
 
-  const download = useCallback((format: 'jsonl' | 'csv' = 'jsonl') => {
-    const frames = bufferRef.current
-    if (frames.length === 0) return
+  const snapshotFrames = useCallback((): Telemetry[] => [...bufferRef.current], [])
 
-    const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const downloadFrames = useCallback((frames: Telemetry[], format: 'jsonl' | 'csv' = 'jsonl'): string | null => {
+    if (frames.length === 0) return null
+
     if (format === 'csv') {
       const header = 'timestamp,depth,heading,pitch,roll,x,z,velocity,battery,flightMode,lights'
       const rows = frames.map((f) =>
@@ -45,15 +43,24 @@ export function useTelemetryRecorder(telemetry: Telemetry, recording: boolean) {
           f.lights,
         ].join(','),
       )
-      triggerDownload(`rov-telemetry-${stamp}.csv`, [header, ...rows].join('\n'), 'text/csv')
-      return
+      return [header, ...rows].join('\n')
     }
 
-    const body = frames.map((f) => JSON.stringify(f)).join('\n')
-    triggerDownload(`rov-telemetry-${stamp}.jsonl`, body, 'application/jsonl')
+    return frames.map((f) => JSON.stringify(f)).join('\n')
   }, [])
 
-  return { frameCount, download }
+  const download = useCallback((format: 'jsonl' | 'csv' = 'jsonl') => {
+    const body = downloadFrames(bufferRef.current, format)
+    if (!body) return false
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+    const ext = format === 'csv' ? 'csv' : 'jsonl'
+    const mime = format === 'csv' ? 'text/csv' : 'application/jsonl'
+    triggerDownload(`rov-telemetry-${stamp}.${ext}`, body, mime)
+    return true
+  }, [downloadFrames])
+
+  return { frameCount, download, clearBuffer, snapshotFrames, downloadFrames }
 }
 
 function triggerDownload(filename: string, body: string, mime: string): void {

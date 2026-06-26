@@ -22,8 +22,10 @@ const DEFAULT_TELEMETRY: Telemetry = {
   timestamp: 0,
 }
 
-export function useWebSocket(bridge: BackendCommandBridge | null) {
+export function useWebSocket(bridge: BackendCommandBridge | null, feedBridge = true) {
   const serviceRef = useRef<WebSocketService | null>(null)
+  const feedBridgeRef = useRef(feedBridge)
+  feedBridgeRef.current = feedBridge
   const [connected, setConnected] = useState(false)
   const [telemetry, setTelemetry] = useState<Telemetry>(DEFAULT_TELEMETRY)
   const [ping, setPing] = useState<number | null>(null)
@@ -36,7 +38,9 @@ export function useWebSocket(bridge: BackendCommandBridge | null) {
     service.setPingHandler(setPing)
     service.setTelemetryHandler((payload) => {
       setTelemetry(payload)
-      bridge?.handleBackendMessage(payload)
+      if (feedBridgeRef.current) {
+        bridge?.handleBackendMessage(payload)
+      }
     })
     service.connect()
 

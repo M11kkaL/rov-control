@@ -133,8 +133,14 @@ func (s *Simulator) applyFlightMode(cmd control.Command, _ float64) control.Comm
 	}
 
 	if cmd.FlightMode == control.FlightHoldDepth {
-		err := s.holdDepthTarget - s.depth
-		cmd.Vertical = clamp(err * holdDepthGain)
+		// Pilot vertical input (Q/E) overrides auto hold
+		if math.Abs(cmd.Vertical) > 0.05 {
+			cmd.Vertical = clamp(cmd.Vertical)
+		} else {
+			err := s.holdDepthTarget - s.depth
+			// depth decreases when vertical is positive (Q = ascend)
+			cmd.Vertical = clamp(-err * holdDepthGain)
+		}
 	}
 
 	return cmd
@@ -147,6 +153,9 @@ func (s *Simulator) integratePitch(cmd control.Command, dt float64) {
 		} else {
 			s.pitch = stabilizeAngle(s.pitch, stabilizeRate, dt)
 		}
+	} else if cmd.FlightMode == control.FlightManual && math.Abs(cmd.Pitch) < 0.01 {
+		// Keep level in manual when not pitching — forward thrust should not nose-dive
+		s.pitch = stabilizeAngle(s.pitch, stabilizeRate*0.6, dt)
 	} else {
 		s.pitch += cmd.Pitch * pitchRate * dt
 	}

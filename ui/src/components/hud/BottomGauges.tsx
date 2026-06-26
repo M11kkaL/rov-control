@@ -3,23 +3,16 @@ import { normalizeHeading } from './hud-utils'
 
 type BottomGaugesProps = {
   heading: number
-  velocity: number
-  depth: number
   pitch: number
   roll: number
 }
 
 const SIZE = 72
 const R = 28
-const R_INNER = 21
 const CX = SIZE / 2
 const CY = SIZE / 2
 const CIRC = 2 * Math.PI * R
-const CIRC_INNER = 2 * Math.PI * R_INNER
 const ARC_SWEEP = 0.75
-
-const SPEED_MAX = 3
-const DEPTH_MAX = 30
 
 function ArcGauge({
   label,
@@ -80,72 +73,6 @@ function ArcGauge({
   )
 }
 
-function SpeedDepthGauge({ velocity, depth }: { velocity: number; depth: number }) {
-  const speedRatio = Math.min(velocity / SPEED_MAX, 1)
-  const depthRatio = Math.min(depth / DEPTH_MAX, 1)
-  const speedNeedle = speedRatio * 270 - 135
-  const speedOffset = CIRC * ARC_SWEEP * (1 - speedRatio)
-  const depthOffset = CIRC_INNER * ARC_SWEEP * (1 - depthRatio)
-
-  return (
-    <div className={styles.gauge}>
-      <span className={styles.label}>Speed / Depth</span>
-      <svg width={SIZE} height={SIZE} className={styles.svg} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-        <circle
-          className={styles.arcBg}
-          cx={CX}
-          cy={CY}
-          r={R}
-          strokeDasharray={`${CIRC * ARC_SWEEP} ${CIRC}`}
-          strokeDashoffset={CIRC * (ARC_SWEEP / 2)}
-          transform={`rotate(135 ${CX} ${CY})`}
-        />
-        <circle
-          className={styles.arcBgInner}
-          cx={CX}
-          cy={CY}
-          r={R_INNER}
-          strokeDasharray={`${CIRC_INNER * ARC_SWEEP} ${CIRC_INNER}`}
-          strokeDashoffset={CIRC_INNER * (ARC_SWEEP / 2)}
-          transform={`rotate(135 ${CX} ${CY})`}
-        />
-        <circle
-          className={styles.arcDepth}
-          cx={CX}
-          cy={CY}
-          r={R_INNER}
-          strokeDasharray={`${CIRC_INNER * ARC_SWEEP} ${CIRC_INNER}`}
-          strokeDashoffset={CIRC_INNER * (ARC_SWEEP / 2) + depthOffset}
-          transform={`rotate(135 ${CX} ${CY})`}
-        />
-        <circle
-          className={styles.arcFg}
-          cx={CX}
-          cy={CY}
-          r={R}
-          strokeDasharray={`${CIRC * ARC_SWEEP} ${CIRC}`}
-          strokeDashoffset={CIRC * (ARC_SWEEP / 2) + speedOffset}
-          transform={`rotate(135 ${CX} ${CY})`}
-        />
-        <g transform={`rotate(${speedNeedle} ${CX} ${CY})`}>
-          <line className={styles.needle} x1={CX} y1={CY} x2={CX} y2={CY - R + 8} />
-        </g>
-        <circle className={styles.centerDot} cx={CX} cy={CY} r={2.5} />
-      </svg>
-      <div className={styles.dualValues}>
-        <div className={styles.dualRow}>
-          <span className={styles.dualLabel}>SPD</span>
-          <span className={styles.dualValue}>{velocity.toFixed(1)} m/s</span>
-        </div>
-        <div className={styles.dualRow}>
-          <span className={styles.dualLabel}>DEP</span>
-          <span className={styles.dualValue}>{depth.toFixed(1)} m</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function CompassGauge({ heading }: { heading: number }) {
   const hdg = normalizeHeading(heading)
 
@@ -175,14 +102,13 @@ function CompassGauge({ heading }: { heading: number }) {
   )
 }
 
-export function BottomGauges({ heading, velocity, depth, pitch, roll }: BottomGaugesProps) {
+export function BottomGauges({ heading, pitch, roll }: BottomGaugesProps) {
   const gyroRatio = Math.min(Math.hypot(pitch, roll) / 45, 1)
   const gyroNeedle = (Math.atan2(roll, pitch) * 180) / Math.PI
 
   return (
     <div className={styles.row}>
       <CompassGauge heading={heading} />
-      <SpeedDepthGauge velocity={velocity} depth={depth} />
       <ArcGauge
         label="Gyro"
         valueText={`P ${pitch >= 0 ? '+' : ''}${pitch.toFixed(0)}°`}

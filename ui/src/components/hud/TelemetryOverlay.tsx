@@ -1,38 +1,54 @@
 import styles from './TelemetryOverlay.module.scss'
 import { headingLabel } from './hud-utils'
 
+type ExportPrompt = {
+  frameCount: number
+  hasVideo: boolean
+  canSaveAll: boolean
+}
+
 type TelemetryOverlayProps = {
-  depth: number
   pitch: number
   roll: number
   heading: number
   connected: boolean
   lightsLevel: number
   recording: boolean
+  savingRecording: boolean
   recordElapsed: string
   recordFrames: number
   photoFlash: boolean
   captureToast: string | null
+  exportPrompt: ExportPrompt | null
   onLightsToggle: () => void
   onToggleRecording: () => void
   onCapturePhoto: () => void
+  onSaveTelemetryExport: () => void
+  onSaveVideoExport: () => void
+  onSaveAllExport: () => void
+  onDismissExport: () => void
 }
 
 export function TelemetryOverlay({
-  depth,
   pitch,
   roll,
   heading,
   connected,
   lightsLevel,
   recording,
+  savingRecording,
   recordElapsed,
   recordFrames,
   photoFlash,
   captureToast,
+  exportPrompt,
   onLightsToggle,
   onToggleRecording,
   onCapturePhoto,
+  onSaveTelemetryExport,
+  onSaveVideoExport,
+  onSaveAllExport,
+  onDismissExport,
 }: TelemetryOverlayProps) {
   const lightsOn = lightsLevel > 0
 
@@ -46,13 +62,6 @@ export function TelemetryOverlay({
       <div className={styles.crosshairH} />
       <div className={styles.crosshairV} />
       <div className={styles.horizon} style={{ transform: `rotate(${roll}deg)` }} />
-
-      <div className={styles.topLeft}>
-        <span className={`${styles.chip} ${!recording ? styles.chipActive : ''}`}>Video</span>
-        <button type="button" className={styles.chip} onClick={onCapturePhoto}>
-          Photo
-        </button>
-      </div>
 
       <div className={styles.topRight}>
         <button
@@ -85,22 +94,48 @@ export function TelemetryOverlay({
         </div>
       </div>
 
-      <div className={styles.bottomLeft}>
-        <span className={styles.chip}>HDR</span>
-      </div>
+      <div className={styles.mediaDock}>
+        <div className={styles.mediaRow}>
+          <span className={`${styles.chip} ${!recording ? styles.chipActive : ''}`}>Video</span>
+          <button type="button" className={styles.chip} onClick={onCapturePhoto}>
+            Photo
+          </button>
+          <button
+            type="button"
+            className={`${styles.rec} ${recording ? styles.recActive : ''}`}
+            onClick={onToggleRecording}
+            disabled={savingRecording}
+            title={recording ? 'Stop recording' : 'Start recording'}
+          >
+            <span className={`${styles.recDot} ${recording ? styles.recDotPulse : ''}`} />
+            {recording ? recordElapsed : 'REC'}
+            {recording && <span>({recordFrames})</span>}
+          </button>
+        </div>
 
-      <div className={styles.bottomRight}>
-        <button
-          type="button"
-          className={`${styles.rec} ${recording ? styles.recActive : ''}`}
-          onClick={onToggleRecording}
-          title={recording ? 'Stop recording and download telemetry' : 'Start telemetry recording'}
-        >
-          <span className={`${styles.recDot} ${recording ? styles.recDotPulse : ''}`} />
-          {recording ? recordElapsed : 'REC'}
-          {recording && <span>({recordFrames})</span>}
-        </button>
-        <span className={styles.chip}>Depth {depth.toFixed(0)}m</span>
+        {exportPrompt && (
+          <div className={styles.exportPanel}>
+            <span className={styles.exportTitle}>Save recording</span>
+            {exportPrompt.canSaveAll && (
+              <button type="button" className={styles.exportBtnAll} onClick={onSaveAllExport}>
+                Save all (.jsonl + .webm)
+              </button>
+            )}
+            {exportPrompt.frameCount > 0 && (
+              <button type="button" className={styles.exportBtn} onClick={onSaveTelemetryExport}>
+                Telemetry (.jsonl) · {exportPrompt.frameCount} frames
+              </button>
+            )}
+            {exportPrompt.hasVideo && (
+              <button type="button" className={styles.exportBtnVideo} onClick={onSaveVideoExport}>
+                Video (.webm)
+              </button>
+            )}
+            <button type="button" className={styles.exportDismiss} onClick={onDismissExport}>
+              Dismiss
+            </button>
+          </div>
+        )}
       </div>
 
       {!connected && <div className={styles.reconnect}>Reconnecting…</div>}

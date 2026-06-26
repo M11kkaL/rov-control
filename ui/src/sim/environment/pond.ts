@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { addCaustics } from './caustics'
+import { addInspectionTarget } from './inspectionTarget'
 
 /** Water surface radius (metres) — keep in sync with backend/internal/sim/pond.go */
 export const POND_RADIUS = 38
@@ -30,6 +32,11 @@ export type PondEnvironment = {
   update: (dt: number) => void
 }
 
+type MarineSnowSystem = {
+  points: THREE.Points
+  velocities: Float32Array
+}
+
 export function buildPondEnvironment(scene: THREE.Scene): PondEnvironment {
   scene.fog = new THREE.FogExp2(0x0e3858, 0.011)
   scene.background = new THREE.Color(0x0a2848)
@@ -39,10 +46,17 @@ export function buildPondEnvironment(scene: THREE.Scene): PondEnvironment {
   addWaterSurface(scene)
   addShoreDetails(scene)
   addUnderwaterDetails(scene)
-  addMarineSnow(scene)
+  const marineSnow = addMarineSnow(scene)
   addLandVegetation(scene)
+  addInspectionTarget(scene)
+  const caustics = addCaustics(scene)
 
-  return { update: () => {} }
+  return {
+    update(dt: number) {
+      caustics.update(dt)
+      updateMarineSnow(marineSnow, dt)
+    },
+  }
 }
 
 function addLighting(scene: THREE.Scene): void {
@@ -355,9 +369,11 @@ function addCenterFeature(scene: THREE.Scene): void {
   }
 }
 
-function addMarineSnow(scene: THREE.Scene): void {
-  const count = 400
+function addMarineSnow(scene: THREE.Scene): MarineSnowSystem {
+  const count = 520
   const positions = new Float32Array(count * 3)
+  const velocities = new Float32Array(count)
+
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2
     const r = Math.random() * (POND_RADIUS - 1)
@@ -367,22 +383,39 @@ function addMarineSnow(scene: THREE.Scene): void {
     positions[i * 3] = x
     positions[i * 3 + 1] = -0.3 - Math.random() * Math.max(maxD - 0.3, 0.5)
     positions[i * 3 + 2] = z
+    velocities[i] = 0.08 + Math.random() * 0.22
   }
 
   const geo = new THREE.BufferGeometry()
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-  scene.add(
-    new THREE.Points(
-      geo,
-      new THREE.PointsMaterial({
-        color: 0x90b0c8,
-        size: 0.03,
-        transparent: true,
-        opacity: 0.25,
-        sizeAttenuation: true,
-      }),
-    ),
+  const points = new THREE.Points(
+    geo,
+    new THREE.PointsMaterial({
+      color: 0x90b0c8,
+      size: 0.035,
+      transparent: true,
+      opacity: 0.32,
+      sizeAttenuation: true,
+    }),
   )
+  scene.add(points)
+  return { points, velocities }
+}
+
+function updateMarineSnow(system: MarineSnowSystem, dt: number): void {
+  const pos = system.points.geometry.attributes.position as THREE.BufferAttribute
+  for (let i = 0; i < system.velocities.length; i++) {
+    let y = pos.getY(i) - system.velocities[i] * dt
+    const x = pos.getX(i)
+    const z = pos.getZ(i)
+    const floor = -pondDepthAt(x, z) + 0.2
+    if (y < floor) {
+      y = -0.2 - Math.random() * Math.max(pondDepthAt(x, z) - 0.3, 0.5)
+    }
+    pos.setY(i, y)
+    pos.setX(i, x + Math.sin((i + y) * 2.1) * dt * 0.04)
+  }
+  pos.needsUpdate = true
 }
 
 function addLandVegetation(scene: THREE.Scene): void {

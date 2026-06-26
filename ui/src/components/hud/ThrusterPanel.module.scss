@@ -9,6 +9,7 @@
   padding: 0.85rem;
   font-family: $hud-font;
   pointer-events: auto;
+  flex-shrink: 0;
 }
 
 .section {

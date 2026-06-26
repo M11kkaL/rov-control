@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react'
+import { saveBlob } from '../utils/saveFile'
 
 export function useVideoRecorder() {
   const recorderRef = useRef<MediaRecorder | null>(null)
@@ -40,15 +41,10 @@ export function useVideoRecorder() {
     })
   }, [])
 
-  const download = useCallback((blob: Blob) => {
+  const save = useCallback(async (blob: Blob) => {
     const stamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `rov-video-${stamp}.webm`
-    link.click()
-    URL.revokeObjectURL(url)
+    return saveBlob(blob, `rov-video-${stamp}.webm`, blob.type || 'video/webm')
   }, [])
 
-  return { start, stop, download }
+  return { start, stop, save }
 }
